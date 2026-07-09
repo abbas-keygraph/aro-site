@@ -125,12 +125,20 @@
   /* ---------- preloader ---------- */
   #preloader {
     position: fixed; inset: 0; z-index: 101; background: #04070a;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
     font-family: "IBM Plex Mono", monospace; color: var(--hud);
     font-size: 13px; letter-spacing: 0.2em;
   }
   #preloader .boot { display: flex; align-items: center; gap: 0.9em; }
   #preloader .brand { color: var(--amber); }
+  #preloader .boot-bar {
+    width: min(320px, 62vw); height: 2px; background: var(--teal);
+    overflow: hidden;
+  }
+  #preloader .boot-bar i {
+    display: block; height: 100%; width: 0; background: var(--amber);
+    transition: width 0.25s ease;
+  }
 
   /* ---------- layout primitives ---------- */
   section { position: relative; padding: 18vh 6vw; }
@@ -400,6 +408,32 @@
     font-family: "Caveat", cursive; font-size: clamp(15px, 1.5vw, 22px); color: #4b4232;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
   }
+  .deck-hero .facetags {
+    position: absolute; left: 4.5%; right: 4.5%; top: 4.5%;
+    aspect-ratio: 1 / 1; overflow: hidden; pointer-events: none;
+  }
+  .deck-hero .ftag {
+    position: absolute; opacity: 0;
+    animation: ftag-in 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+    transition: opacity 0.45s ease;
+  }
+  .deck-hero .ftag.out { opacity: 0 !important; }
+  .deck-hero .ftag i { position: absolute; width: 27%; height: 27%; border: 2px solid var(--amber); }
+  .deck-hero .ftag i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+  .deck-hero .ftag i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+  .deck-hero .ftag i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+  .deck-hero .ftag i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+  .deck-hero .ftag em {
+    position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+    font-family: "IBM Plex Mono", monospace; font-style: normal; font-size: 10px; letter-spacing: 0.1em;
+    color: var(--amber); background: rgba(4, 7, 10, 0.8); padding: 1px 6px; white-space: nowrap;
+  }
+  @keyframes ftag-in {
+    0% { opacity: 0; transform: scale(1.45); }
+    55% { opacity: 1; transform: scale(0.94); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
   .deck-hero .deck-cap {
     display: block; margin-top: 1rem; text-align: center;
     font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.2em;
@@ -471,7 +505,8 @@
 </noscript>
 
 <div id="preloader" aria-hidden="true">
-  <div class="boot"><span class="af-dot"></span><span><span class="brand">aro</span>&nbsp;&nbsp;·&nbsp;&nbsp;METERING LIGHT&nbsp;&nbsp;·&nbsp;&nbsp;<span id="bootFr">FR 00/36</span></span></div>
+  <div class="boot"><span class="af-dot"></span><span><span class="brand">aro</span>&nbsp;&nbsp;·&nbsp;&nbsp;DEVELOPING THE ROLL&nbsp;&nbsp;·&nbsp;&nbsp;<span id="bootFr">FR 00/36</span></span></div>
+  <div class="boot-bar"><i id="bootBarFill"></i></div>
 </div>
 
 <div class="grain" aria-hidden="true"></div>
@@ -900,7 +935,8 @@
   if (deck) {
     var dCards = [].slice.call(deck.querySelectorAll(".pcard"));
     var busy = false;
-    var PILE = [{"f":"img-4063.jpg","n":"Aro"},{"f":"img-0483.jpg","n":"Lakshmi · Surya Deepan"},{"f":"img-0209-0.jpg","n":"Aro · JD"},{"f":"img-0211.jpg","n":"JD"},{"f":"img-5590.jpg","n":"Aro · Karthik Raja · Surya Deepan · Guru Karthik"},{"f":"img-5588.jpg","n":""},{"f":"img-0653-0.jpg","n":"Aro"},{"f":"img-5007.jpg","n":"Godwin · Aro"},{"f":"img-4998.jpg","n":"Aadhil · Aro"},{"f":"img-3190.jpg","n":"Anushika"},{"f":"img-4924.jpg","n":"Aro · Jervin"},{"f":"img-5140-0.jpg","n":"Sivadharani"},{"f":"img-1654-0.jpg","n":"Aro · Abinaya"},{"f":"img-4818.jpg","n":"Nandini · Aro"},{"f":"img-3493.jpg","n":"Ricky · Pramodh · Ashwin · Aro"},{"f":"img-5583.jpg","n":"Abhishek · JD"},{"f":"img-5589.jpg","n":"Aro · Guru Karthik · Surya Deepan · Karthik Raja"},{"f":"img-4024.jpg","n":"Gayathri"},{"f":"img-0662-0.jpg","n":"Gopika"},{"f":"img-4263.jpg","n":"Aro · Gayathri"},{"f":"img-4481.jpg","n":"Aro · Ajay Anand · Sivadharani"},{"f":"img-3114.jpg","n":"Aro · Surya Deepan · Harini · Guru Karthik · Jagadish · Karthik Raja"},{"f":"img-2324.jpg","n":"Mayank · Naveen · Manoj · Benji · Aro · Vicky · Aadithya · Vishruth · Sujan"},{"f":"img-4841-0.jpg","n":"Janani · Shanitha · Balaji · Riki · Jervin · Ajay Anand · Aro · Sivadharani · Aadhil"},{"f":"img-5141-0.jpg","n":"Sivadharani"},{"f":"img-4829.jpg","n":"Riki · Shanitha · Balaji · Ajay Anand · Aro · Jervin · Janani"},{"f":"img-4256.jpg","n":"Vinisha · Aro"},{"f":"img-4995.jpg","n":"Ajay Anand · Godwin"},{"f":"img-4648.jpg","n":"Riki · Jervin · Janani · Aro · Shanitha · Karthik"},{"f":"img-3951.jpg","n":"Shanitha"},{"f":"img-5262.jpg","n":"Gopika · Surya Deepan · Yadu · Aro"},{"f":"img-2303.jpg","n":"Vishruth"},{"f":"img-2814.jpg","n":"Anushika · Aro · Pavithran"},{"f":"img-5586.jpg","n":"Mayank · Ajay · Aro"},{"f":"img-5548.jpg","n":"Gayathri · Surya Deepan · Aro"},{"f":"img-4909.jpg","n":"Sivadharani · Aro"},{"f":"img-5579.jpg","n":"Aro · Abhishek"},{"f":"img-5162.jpg","n":"Vishruth · Ajmal Athik · Vignesh · Rakesh · Thomas · Aadithya · Aro · Kishore"},{"f":"img-0121-abi.jpg","n":"Abhishek"},{"f":"img-3904-0.jpg","n":"Karthik Raja · Jagadish · Harini · Aro · Surya Deepan"},{"f":"img-4272.jpg","n":"Gayathri · Surya Deepan"},{"f":"img-5587.jpg","n":"Anand · Aro"},{"f":"img-4112-0.jpg","n":"Kamali"},{"f":"img-3777.jpg","n":"Aro · Anushika"},{"f":"img-3953.jpg","n":"Sivadharani"},{"f":"img-4409.jpg","n":"Vishak · Anto · Aro"},{"f":"img-4913.jpg","n":"Thamizharasan · Aro"},{"f":"img-4257.jpg","n":"Vinisha · Surya Deepan · Aro"},{"f":"img-0689.jpg","n":"Jagadish · Aro"},{"f":"img-2699-0.jpg","n":"Kamali"},{"f":"img-2309.jpg","n":"Aadithya"},{"f":"img-2282.jpg","n":"Manoj · Aro"},{"f":"img-9916.jpg","n":"Varun · JD · Pramodh · Purvaja · Sivaranjini · Krithin · Abhishek · Surya Prakash · Aro · Ashwin · Swetha"},{"f":"img-5056.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"img-4891.jpg","n":"Riki · Aro"},{"f":"img-5591.jpg","n":"Aro · Surya Deepan"},{"f":"img-5585.jpg","n":""},{"f":"img-3731.jpg","n":"Pavithran"},{"f":"img-0797.jpg","n":"Barath"},{"f":"img-4902.jpg","n":"Shanitha · Ajay Anand · Aro"},{"f":"img-2304.jpg","n":"Benji"},{"f":"img-4025-0.jpg","n":"Surya Deepan"},{"f":"img-4903.jpg","n":"Shanitha · Aro"},{"f":"img-9160.jpg","n":"Sivaranjini · JD"},{"f":"img-5581.jpg","n":"Arunima"},{"f":"img-4135.jpg","n":"Hari · Revathy · Deepan"},{"f":"img-3947.jpg","n":"Jervin"},{"f":"img-1649.jpg","n":"Jagadish · Aro · Surya Deepan · Yadu"},{"f":"img-5536.jpg","n":"Gayathri · Vinisha"},{"f":"img-4911.jpg","n":"Aadithya · Aro"},{"f":"img-4499-0.jpg","n":"Nandini · Arjun · JK · Aro"},{"f":"img-5580.jpg","n":"Aro · Abhishek · Sivaranjini"},{"f":"img-2290.jpg","n":"Aro · Naveen"},{"f":"img-0687.jpg","n":"JD · Aro"},{"f":"img-4196.jpg","n":"Shanitha · Janani · Karthik · Balaji · Aro · Jervin · Goutham"},{"f":"img-2307.jpg","n":"Naveen"},{"f":"img-4936.jpg","n":"Sivadharani · Karthik · Jervin · Shivaprakash"},{"f":"img-5582.jpg","n":"Afrin"},{"f":"img-4899.jpg","n":"Shanitha · Ajay Anand · Aro"},{"f":"img-3420.jpg","n":"Surya Deepan"},{"f":"img-8804.jpg","n":"Sivaranjini · Swetha · Ashwin · Purvaja · Varun · Surya Prakash"},{"f":"img-5513.jpg","n":"Vinisha · Surya Deepan · Gayathri · Aro"},{"f":"img-4996.jpg","n":"Deepan · Aro"},{"f":"img-3945.jpg","n":"Ajay Anand"},{"f":"img-3457.jpg","n":"Anushika"},{"f":"img-5584.jpg","n":"Arunima"},{"f":"img-0212.jpg","n":"Swetha"},{"f":"img-3950.jpg","n":"Shivaprakash"},{"f":"img-5531.jpg","n":"Gayathri"},{"f":"img-4419.jpg","n":"Rikitha · Aro · Balaji · Godwin"},{"f":"img-0658-0.jpg","n":"Gopika · Aro"},{"f":"img-4864-0.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"whatsapp-image-2025-09-02-at-1-50-34-pm.jpg","n":"Arunima"},{"f":"img-5037.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"img-0248.jpg","n":"JD"}];
+    var PILE = [{"f":"img-4648.jpg","n":"Riki · Jervin · Janani · Aro · Shanitha · Karthik"},{"f":"whatsapp-image-2025-09-02-at-1-50-34-pm.jpg","n":"Arunima"},{"f":"img-3904-0.jpg","n":"Karthik Raja · Jagadish · Harini · Aro · Surya Deepan"},{"f":"img-9916.jpg","n":"Varun · JD · Pramodh · Purvaja · Sivaranjini · Krithin · Abhishek · Surya Prakash · Aro · Ashwin · Swetha"},{"f":"img-4913.jpg","n":"Thamizharasan · Aro"},{"f":"img-3950.jpg","n":"Shivaprakash"},{"f":"img-0658-0.jpg","n":"Gopika · Aro"},{"f":"img-4135.jpg","n":"Hari · Revathy · Deepan"},{"f":"img-5585.jpg","n":""},{"f":"img-5580.jpg","n":"Aro · Abhishek · Sivaranjini"},{"f":"img-4909.jpg","n":"Sivadharani · Aro"},{"f":"img-4063.jpg","n":"Aro"},{"f":"img-3420.jpg","n":"Surya Deepan"},{"f":"img-5262.jpg","n":"Gopika · Surya Deepan · Yadu · Aro"},{"f":"img-1649.jpg","n":"Jagadish · Aro · Surya Deepan · Yadu"},{"f":"img-3457.jpg","n":"Anushika"},{"f":"img-5584.jpg","n":"Arunima"},{"f":"img-0797.jpg","n":"Barath"},{"f":"img-0689.jpg","n":"Jagadish · Aro"},{"f":"img-5162.jpg","n":"Vishruth · Ajmal Athik · Vignesh · Rakesh · Thomas · Aadithya · Aro · Kishore"},{"f":"img-8804.jpg","n":"Sivaranjini · Swetha · Ashwin · Purvaja · Varun · Surya Prakash"},{"f":"img-4024.jpg","n":"Gayathri"},{"f":"img-3493.jpg","n":"Ricky · Pramodh · Ashwin · Aro"},{"f":"img-5589.jpg","n":"Aro · Guru Karthik · Surya Deepan · Karthik Raja"},{"f":"img-4499-0.jpg","n":"Nandini · Arjun · JK · Aro"},{"f":"img-2303.jpg","n":"Vishruth"},{"f":"img-2290.jpg","n":"Aro · Naveen"},{"f":"img-2304.jpg","n":"Benji"},{"f":"img-4256.jpg","n":"Vinisha · Aro"},{"f":"img-3945.jpg","n":"Ajay Anand"},{"f":"img-4998.jpg","n":"Aadhil · Aro"},{"f":"img-0211.jpg","n":"JD"},{"f":"img-0653-0.jpg","n":"Aro"},{"f":"img-5056.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"img-2309.jpg","n":"Aadithya"},{"f":"img-2814.jpg","n":"Anushika · Aro · Pavithran"},{"f":"img-4899.jpg","n":"Shanitha · Ajay Anand · Aro"},{"f":"img-4902.jpg","n":"Shanitha · Ajay Anand · Aro"},{"f":"img-5590.jpg","n":"Aro · Karthik Raja · Surya Deepan · Guru Karthik"},{"f":"img-4841-0.jpg","n":"Janani · Shanitha · Balaji · Riki · Jervin · Ajay Anand · Aro · Sivadharani · Aadhil"},{"f":"img-3114.jpg","n":"Aro · Surya Deepan · Harini · Guru Karthik · Jagadish · Karthik Raja"},{"f":"img-4911.jpg","n":"Aadithya · Aro"},{"f":"img-4272.jpg","n":"Gayathri · Surya Deepan"},{"f":"img-5536.jpg","n":"Gayathri · Vinisha"},{"f":"img-4481.jpg","n":"Aro · Ajay Anand · Sivadharani"},{"f":"img-5588.jpg","n":""},{"f":"img-5141-0.jpg","n":"Sivadharani"},{"f":"img-0687.jpg","n":"JD · Aro"},{"f":"img-5037.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"img-5531.jpg","n":"Gayathri"},{"f":"img-0209-0.jpg","n":"Aro · JD"},{"f":"img-4818.jpg","n":"Nandini · Aro"},{"f":"img-4419.jpg","n":"Rikitha · Aro · Balaji · Godwin"},{"f":"img-5586.jpg","n":"Mayank · Ajay · Aro"},{"f":"img-3947.jpg","n":"Jervin"},{"f":"img-0248.jpg","n":"JD"},{"f":"img-0662-0.jpg","n":"Gopika"},{"f":"img-5579.jpg","n":"Aro · Abhishek"},{"f":"img-4995.jpg","n":"Ajay Anand · Godwin"},{"f":"img-4257.jpg","n":"Vinisha · Surya Deepan · Aro"},{"f":"img-3731.jpg","n":"Pavithran"},{"f":"img-4903.jpg","n":"Shanitha · Aro"},{"f":"img-4112-0.jpg","n":"Kamali"},{"f":"img-5581.jpg","n":"Arunima"},{"f":"img-4196.jpg","n":"Shanitha · Janani · Karthik · Balaji · Aro · Jervin · Goutham"},{"f":"img-5582.jpg","n":"Afrin"},{"f":"img-4025-0.jpg","n":"Surya Deepan"},{"f":"img-0121-abi.jpg","n":"Abhishek"},{"f":"img-4996.jpg","n":"Deepan · Aro"},{"f":"img-5513.jpg","n":"Vinisha · Surya Deepan · Gayathri · Aro"},{"f":"img-3777.jpg","n":"Aro · Anushika"},{"f":"img-5140-0.jpg","n":"Sivadharani"},{"f":"img-5007.jpg","n":"Godwin · Aro"},{"f":"img-5548.jpg","n":"Gayathri · Surya Deepan · Aro"},{"f":"img-5591.jpg","n":"Aro · Surya Deepan"},{"f":"img-4891.jpg","n":"Riki · Aro"},{"f":"img-2307.jpg","n":"Naveen"},{"f":"img-3951.jpg","n":"Shanitha"},{"f":"img-4936.jpg","n":"Sivadharani · Karthik · Jervin · Shivaprakash"},{"f":"img-1654-0.jpg","n":"Aro · Abinaya"},{"f":"img-2699-0.jpg","n":"Kamali"},{"f":"img-4409.jpg","n":"Vishak · Anto · Aro"},{"f":"img-2324.jpg","n":"Mayank · Naveen · Manoj · Benji · Aro · Vicky · Aadithya · Vishruth · Sujan"},{"f":"img-0212.jpg","n":"Swetha"},{"f":"img-3190.jpg","n":"Anushika"},{"f":"img-2282.jpg","n":"Manoj · Aro"},{"f":"img-3953.jpg","n":"Sivadharani"},{"f":"img-4829.jpg","n":"Riki · Shanitha · Balaji · Ajay Anand · Aro · Jervin · Janani"},{"f":"img-0483.jpg","n":"Lakshmi · Surya Deepan"},{"f":"img-5587.jpg","n":"Anand · Aro"},{"f":"img-4864-0.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"img-5583.jpg","n":"Abhishek · JD"},{"f":"img-9160.jpg","n":"Sivaranjini · JD"},{"f":"img-4263.jpg","n":"Aro · Gayathri"},{"f":"img-4924.jpg","n":"Aro · Jervin"}];
+    var FACEMAP = {"img-0121-abi.jpg":[[37.1,15.2,15.0,18.5,"Abhishek"]],"img-0209-0.jpg":[[58.7,29.1,5.1,7.1,"Aro"],[34.5,23.8,6.1,7.5,"JD"]],"img-0211.jpg":[[25.0,23.1,31.1,39.6,"JD"]],"img-0212.jpg":[[21.4,26.3,38.6,47.1,"Swetha"]],"img-0248.jpg":[[32.0,38.4,42.5,43.8,"JD"]],"img-0483.jpg":[[53.8,40.6,10.6,9.8,"Lakshmi"],[24.5,27.4,11.8,11.6,"Surya Deepan"]],"img-0553-0.jpg":[[38.4,18.8,9.2,11.2,"Balaji"],[25.6,31.1,9.1,10.5,"Aro"],[63.1,28.0,10.9,12.4,"JD"]],"img-0653-0.jpg":[[21.8,38.6,23.6,33.4,"Aro"]],"img-0658-0.jpg":[[21.1,28.0,14.0,17.7,"Gopika"],[52.0,18.2,15.8,20.1,"Aro"]],"img-0662-0.jpg":[[46.2,20.4,16.2,23.2,"Gopika"]],"img-0687.jpg":[[46.3,14.3,23.1,32.9,"JD"],[30.1,39.8,23.9,31.9,"Aro"]],"img-0689.jpg":[[56.5,20.2,21.4,26.5,"Jagadish"],[31.8,29.8,22.7,30.3,"Aro"]],"img-0797.jpg":[[27.8,19.4,30.3,36.6,"Barath"]],"img-1649.jpg":[[48.0,16.8,19.5,23.7,"Jagadish"],[29.8,48.4,25.4,30.6,"Aro"],[76.0,28.3,21.1,24.0,"Surya Deepan"],[-0.3,54.6,20.7,33.3,"Yadu"]],"img-1654-0.jpg":[[13.9,13.1,33.8,50.3,"Aro"],[52.5,9.4,38.0,44.8,"Abinaya"]],"img-1822.jpg":[[39.4,41.6,17.8,23.5,"Guru Karthik"],[23.1,25.5,15.5,20.8,"Karthik Raja"],[59.8,40.5,13.3,17.8,"Aro"],[80.0,43.5,20.1,24.6,"Surya Deepan"],[71.9,29.3,11.6,12.9,"Jagadish"],[-3.2,46.6,29.2,27.5,"Paranav"]],"img-2282.jpg":[[58.7,39.0,21.6,28.8,"Manoj"],[33.8,28.7,25.6,32.0,"Aro"]],"img-2290.jpg":[[10.0,38.5,24.8,29.9,"Aro"],[27.2,30.6,14.8,19.4,"Naveen"]],"img-2303.jpg":[[46.8,23.9,22.2,24.5,"Vishruth"]],"img-2304.jpg":[[41.1,27.3,23.0,33.6,"Benji"]],"img-2307.jpg":[[55.4,18.9,18.8,22.0,"Naveen"]],"img-2309.jpg":[[48.7,14.7,14.7,24.0,"Aadithya"]],"img-2324.jpg":[[34.8,18.8,13.0,16.8,"Mayank"],[53.9,24.1,13.4,16.5,"Naveen"],[50.2,6.9,12.2,15.4,"Manoj"],[4.4,13.6,17.7,21.4,"Benji"],[14.2,63.0,26.7,32.3,"Aro"],[68.4,40.4,14.4,17.3,"Vicky"],[14.6,11.1,11.1,15.2,"Aadithya"],[25.4,3.4,9.8,12.6,"Vishruth"],[42.3,51.1,14.2,17.2,"Sujan"]],"img-2699-0.jpg":[[45.1,16.7,26.6,35.3,"Kamali"]],"img-2814.jpg":[[48.8,27.8,11.1,14.4,"Anushika"],[64.4,21.7,11.7,14.7,"Aro"],[75.9,38.9,13.2,14.4,"Pavithran"]],"img-3114.jpg":[[29.9,30.3,18.5,23.3,"Aro"],[5.7,27.6,8.8,10.5,"Surya Deepan"],[19.4,36.0,8.8,12.0,"Harini"],[63.4,26.1,9.9,13.2,"Guru Karthik"],[76.7,30.7,13.3,14.7,"Jagadish"],[50.0,23.5,9.5,13.0,"Karthik Raja"]],"img-3190.jpg":[[40.5,20.3,24.1,31.6,"Anushika"]],"img-3420.jpg":[[47.8,30.6,19.2,25.4,"Surya Deepan"]],"img-3457.jpg":[[42.7,16.9,19.9,25.5,"Anushika"]],"img-3493.jpg":[[79.9,35.6,19.0,24.3,"Ricky"],[30.3,39.0,19.1,24.2,"Pramodh"],[51.8,42.4,22.1,25.2,"Ashwin"],[4.7,12.3,24.3,33.4,"Aro"]],"img-3731.jpg":[[33.2,27.4,25.4,35.5,"Pavithran"]],"img-3777.jpg":[[16.5,28.9,28.0,39.7,"Aro"],[61.8,21.2,29.2,35.8,"Anushika"]],"img-3785.jpg":[[56.4,16.2,9.7,12.7,"Aro"],[36.7,23.4,9.2,12.1,"Gomathi (Mummy)"]],"img-3904-0.jpg":[[57.4,32.2,8.1,10.9,"Karthik Raja"],[27.6,36.0,8.6,11.0,"Jagadish"],[41.6,43.7,6.8,9.2,"Harini"],[11.4,42.1,8.9,9.9,"Aro"],[76.5,35.8,8.9,10.0,"Surya Deepan"]],"img-3920.jpg":[[33.2,37.8,11.6,14.5,"Guru Karthik"],[63.8,25.6,10.4,13.1,"Sami"],[45.4,31.3,9.9,12.1,"Aro"],[77.8,16.1,2.7,3.4,"Karthik Raja"]],"img-3945.jpg":[[45.6,28.3,25.9,35.6,"Ajay Anand"]],"img-3947.jpg":[[50.0,29.9,29.0,35.2,"Jervin"]],"img-3950.jpg":[[47.5,21.0,29.1,32.4,"Shivaprakash"]],"img-3951.jpg":[[43.4,23.3,25.6,33.1,"Shanitha"]],"img-3953.jpg":[[43.4,33.4,35.0,36.6,"Sivadharani"]],"img-4024.jpg":[[35.3,28.3,13.7,24.5,"Gayathri"]],"img-4025-0.jpg":[[47.7,25.3,12.9,16.7,"Surya Deepan"]],"img-4063.jpg":[[3.1,22.2,35.9,44.4,"Aro"]],"img-4112-0.jpg":[[69.8,22.7,5.3,8.2,"Kamali"]],"img-4135.jpg":[[9.2,31.2,12.8,17.0,"Hari"],[46.7,41.9,10.1,12.7,"Revathy"],[82.7,34.5,10.7,12.7,"Deepan"]],"img-4196.jpg":[[18.9,64.0,11.0,12.9,"Shanitha"],[63.0,52.1,5.1,6.4,"Janani"],[35.8,54.2,8.2,10.9,"Karthik"],[7.2,53.3,7.3,8.2,"Balaji"],[83.5,56.8,7.6,8.9,"Aro"],[27.5,49.1,4.8,6.0,"Jervin"],[47.5,61.8,7.5,8.2,"Goutham"]],"img-4256.jpg":[[65.1,36.5,19.1,23.8,"Vinisha"],[18.2,20.0,24.0,30.7,"Aro"]],"img-4257.jpg":[[41.7,32.5,16.6,21.7,"Vinisha"],[72.8,22.3,17.9,22.8,"Surya Deepan"],[2.1,17.3,29.7,38.5,"Aro"]],"img-4263.jpg":[[29.7,18.3,11.6,14.7,"Aro"],[55.0,19.4,12.8,16.0,"Gayathri"]],"img-4272.jpg":[[53.7,27.3,10.0,13.1,"Gayathri"],[38.5,18.4,10.4,13.2,"Surya Deepan"]],"img-4409.jpg":[[45.0,26.7,14.5,20.0,"Vishak"],[62.3,24.8,11.9,16.0,"Anto"],[31.9,45.7,13.7,15.9,"Aro"]],"img-4419.jpg":[[57.6,40.6,10.4,12.2,"Rikitha"],[29.3,34.4,13.2,14.9,"Aro"],[46.5,25.4,11.4,14.4,"Balaji"],[65.9,14.7,5.6,7.0,"Godwin"]],"img-4481.jpg":[[36.4,35.4,11.6,13.3,"Aro"],[47.0,22.8,7.8,9.0,"Ajay Anand"],[55.6,32.5,7.0,8.9,"Sivadharani"]],"img-4499-0.jpg":[[67.8,24.7,17.1,21.7,"Nandini"],[49.3,9.9,14.9,21.9,"Arjun"],[26.0,10.1,17.9,25.1,"JK"],[15.0,51.6,27.6,34.4,"Aro"]],"img-4648.jpg":[[71.9,40.8,18.4,22.6,"Riki"],[49.2,21.3,14.2,17.6,"Jervin"],[-0.6,33.2,24.4,32.1,"Janani"],[26.8,28.3,26.0,32.4,"Aro"],[58.3,36.1,13.3,14.5,"Shanitha"],[89.2,30.1,11.0,16.1,"Karthik"]],"img-4753.jpg":[[38.7,35.5,19.1,23.4,"Sivadharani"],[57.9,14.0,21.4,27.1,"Ajay Anand"],[14.1,40.1,22.6,29.5,"Aro"]],"img-4818.jpg":[[44.7,23.5,17.3,23.6,"Nandini"],[21.9,35.2,22.8,29.2,"Aro"]],"img-4829.jpg":[[58.1,35.1,9.2,11.8,"Riki"],[28.7,24.7,9.0,10.3,"Shanitha"],[77.7,37.5,11.3,12.8,"Balaji"],[13.7,21.3,9.5,11.9,"Ajay Anand"],[38.5,36.5,14.2,17.5,"Aro"],[33.7,10.0,7.9,10.1,"Jervin"],[43.6,22.3,7.3,9.6,"Janani"]],"img-4841-0.jpg":[[40.5,30.3,6.5,8.6,"Janani"],[47.5,31.4,6.3,7.7,"Shanitha"],[67.8,46.2,11.2,12.9,"Balaji"],[52.5,43.2,7.9,10.0,"Riki"],[17.7,18.8,10.1,12.8,"Jervin"],[28.9,23.8,6.5,8.2,"Ajay Anand"],[27.0,40.5,12.6,13.8,"Aro"],[55.3,67.0,10.3,13.5,"Sivadharani"],[42.0,12.7,6.6,7.5,"Aadhil"]],"img-4864-0.jpg":[[65.0,41.2,19.0,27.8,"Sivadharani"],[33.8,24.0,24.4,33.0,"Ajay Anand"],[-0.4,35.5,25.8,36.5,"Aro"]],"img-4891.jpg":[[49.6,27.7,19.7,25.1,"Riki"],[26.6,31.2,21.6,29.1,"Aro"]],"img-4899.jpg":[[40.9,29.1,22.7,28.2,"Shanitha"],[67.6,11.1,20.1,24.6,"Ajay Anand"],[9.0,35.9,29.3,36.4,"Aro"]],"img-4902.jpg":[[53.5,36.0,24.5,29.8,"Shanitha"],[32.0,11.9,19.1,21.7,"Ajay Anand"],[19.5,51.3,30.2,35.7,"Aro"]],"img-4903.jpg":[[51.7,25.4,19.6,24.1,"Shanitha"],[22.5,26.2,23.6,30.6,"Aro"]],"img-4909.jpg":[[52.4,24.7,20.9,24.8,"Sivadharani"],[17.1,22.9,28.6,34.3,"Aro"]],"img-4911.jpg":[[49.4,30.3,24.1,29.5,"Aadithya"],[25.9,36.9,24.4,31.5,"Aro"]],"img-4913.jpg":[[45.0,21.3,19.0,23.9,"Thamizharasan"],[26.4,38.3,21.2,27.0,"Aro"]],"img-4924.jpg":[[19.7,28.7,23.0,31.3,"Aro"],[57.0,25.2,20.9,28.5,"Jervin"]],"img-4926.jpg":[[72.0,38.0,16.6,22.5,"Sivadharani"],[17.4,22.3,22.3,30.4,"Aro"],[48.6,24.1,22.0,26.5,"Jervin"]],"img-4936.jpg":[[47.2,44.0,17.3,21.9,"Sivadharani"],[79.4,34.4,20.2,27.3,"Karthik"],[22.4,34.6,19.8,23.2,"Jervin"],[-0.1,41.1,18.8,22.9,"Shivaprakash"]],"img-4995.jpg":[[44.9,53.3,6.1,7.2,"Ajay Anand"],[63.2,50.5,6.6,9.0,"Godwin"]],"img-4996.jpg":[[44.9,23.0,21.5,29.9,"Deepan"],[24.5,30.1,23.1,30.4,"Aro"]],"img-4998.jpg":[[41.4,18.0,22.3,27.8,"Aadhil"],[25.5,46.6,24.9,28.9,"Aro"]],"img-5006.jpg":[[22.0,31.7,22.8,32.8,"Aro"],[49.6,23.6,20.1,27.8,"Narmadha"]],"img-5007.jpg":[[56.9,23.5,22.8,25.9,"Godwin"],[18.4,39.3,24.6,30.8,"Aro"]],"img-5037.jpg":[[38.6,33.1,15.2,20.2,"Sivadharani"],[57.0,19.9,19.7,24.2,"Ajay Anand"],[17.5,37.9,21.3,29.5,"Aro"]],"img-5041.jpg":[[22.5,15.6,17.6,24.5,"Aadithya"],[63.7,14.1,16.6,21.6,"Godwin"],[44.0,24.8,17.9,22.8,"Ajay Anand"],[36.5,53.4,16.7,21.4,"Sivadharani"],[66.5,47.6,19.7,24.5,"Narmadha"],[17.0,52.9,22.5,31.8,"Aro"]],"img-5056.jpg":[[42.6,39.0,17.8,21.8,"Sivadharani"],[63.7,12.6,23.5,30.8,"Ajay Anand"],[7.8,27.9,25.4,31.8,"Aro"]],"img-5140-0.jpg":[[27.4,24.5,36.5,40.5,"Sivadharani"]],"img-5141-0.jpg":[[44.5,27.1,10.2,13.2,"Sivadharani"]],"img-5162.jpg":[[25.8,25.1,9.1,11.6,"Vishruth"],[66.0,27.2,9.0,11.7,"Ajmal Athik"],[78.2,39.6,11.6,13.6,"Vignesh"],[11.8,37.2,15.4,19.8,"Rakesh"],[48.9,17.5,6.0,7.6,"Thomas"],[41.0,24.2,6.6,8.1,"Aadithya"],[39.4,40.2,12.3,14.7,"Aro"],[56.1,27.4,6.7,6.8,"Kishore"]],"img-5262.jpg":[[25.1,45.1,14.8,17.7,"Gopika"],[68.6,14.5,15.4,19.8,"Surya Deepan"],[46.0,18.7,15.4,19.2,"Yadu"],[49.3,47.7,26.6,33.2,"Aro"]],"img-5513.jpg":[[51.2,27.3,19.2,24.2,"Vinisha"],[23.9,6.3,21.1,28.1,"Surya Deepan"],[65.3,54.1,22.4,28.6,"Gayathri"],[20.1,48.3,30.1,40.6,"Aro"]],"img-5531.jpg":[[42.8,29.6,9.3,12.0,"Gayathri"]],"img-5536.jpg":[[60.0,26.4,27.9,32.3,"Gayathri"],[18.4,28.6,20.3,24.1,"Vinisha"]],"img-5548.jpg":[[76.8,31.6,19.3,21.1,"Gayathri"],[34.9,3.5,18.4,23.1,"Surya Deepan"],[18.8,43.0,21.6,29.6,"Aro"]],"img-5579.jpg":[[53.2,26.7,39.0,46.2,"Aro"],[9.5,20.2,32.1,34.1,"Abhishek"]],"img-5580.jpg":[[34.2,38.8,32.3,39.3,"Aro"],[63.5,32.8,28.1,36.0,"Abhishek"],[-0.1,21.7,28.7,53.6,"Sivaranjini"]],"img-5581.jpg":[[45.2,44.5,26.2,23.2,"Arunima"]],"img-5582.jpg":[[18.6,28.9,29.4,39.2,"Afrin"]],"img-5583.jpg":[[32.3,35.4,23.7,29.8,"Abhishek"],[-1.6,21.8,24.8,39.9,"JD"]],"img-5584.jpg":[[36.0,20.8,30.3,41.0,"Arunima"]],"img-5586.jpg":[[41.6,36.3,16.3,22.8,"Mayank"],[19.2,34.0,18.2,23.9,"Ajay"],[68.5,35.9,20.3,22.6,"Aro"]],"img-5587.jpg":[[17.9,35.9,14.4,16.9,"Anand"],[60.6,43.9,18.4,20.1,"Aro"]],"img-5589.jpg":[[40.1,42.3,23.4,27.2,"Aro"],[3.1,24.1,29.4,38.4,"Guru Karthik"],[74.3,34.0,19.9,21.9,"Surya Deepan"],[64.5,48.2,10.2,16.9,"Karthik Raja"]],"img-5590.jpg":[[36.9,37.7,9.9,13.1,"Aro"],[58.3,37.5,11.1,12.8,"Karthik Raja"],[72.1,39.5,10.3,9.8,"Surya Deepan"],[16.3,42.0,18.4,20.9,"Guru Karthik"]],"img-5591.jpg":[[21.0,47.6,29.9,41.9,"Aro"],[42.3,16.3,25.4,31.0,"Surya Deepan"]],"img-8804.jpg":[[30.8,26.6,6.0,8.0,"Sivaranjini"],[57.0,27.3,5.6,7.5,"Swetha"],[65.7,25.5,6.1,7.8,"Ashwin"],[16.6,29.4,7.6,8.2,"Purvaja"],[74.6,15.9,7.5,8.5,"Varun"],[43.1,22.9,6.2,8.0,"Surya Prakash"]],"img-9160.jpg":[[15.7,27.7,14.8,18.1,"Sivaranjini"],[63.5,12.3,14.5,22.8,"JD"]],"img-9916.jpg":[[25.6,21.6,5.5,6.7,"Varun"],[45.2,23.2,5.3,6.3,"JD"],[52.4,25.5,4.5,5.6,"Pramodh"],[45.1,32.1,4.7,5.8,"Purvaja"],[68.3,30.6,5.0,6.0,"Sivaranjini"],[62.9,24.2,5.0,5.9,"Krithin"],[15.3,22.7,5.8,7.0,"Abhishek"],[34.7,27.2,5.1,6.1,"Surya Prakash"],[56.5,31.3,4.7,6.0,"Aro"],[75.1,31.0,4.7,5.8,"Ashwin"],[80.6,29.0,5.6,6.5,"Swetha"]],"whatsapp-image-2025-09-02-at-1-50-34-pm.jpg":[[52.2,17.1,11.3,14.0,"Arunima"]]};
     var pileNext = 0;
     function feedCard(card) {
       if (!PILE.length) return;
@@ -944,9 +980,45 @@
         dCards.push(dCards.shift());
         feedCard(top);
         deckLayout();
-        setTimeout(function () { busy = false; }, 560);
+        setTimeout(function () { busy = false; showTopTags(); }, 560);
       }, 330);
     }
+    var showTopTags = function () {
+      var card = dCards[0];
+      var old = card.querySelector(".facetags");
+      if (old) old.remove();
+      if (reduced) return;
+      var img = card.querySelector("img");
+      var file = (img.getAttribute("src") || "").split("/").pop();
+      var faces = FACEMAP[file];
+      if (!faces || !faces.length || !img.naturalWidth) return;
+      var wrap = document.createElement("span");
+      wrap.className = "facetags";
+      card.appendChild(wrap);
+      var S = wrap.clientWidth, H = wrap.clientHeight;
+      var nw = img.naturalWidth, nh = img.naturalHeight;
+      var sc = Math.max(S / nw, H / nh), dw = nw * sc, dh = nh * sc;
+      var ox = (S - dw) / 2, oy = (H - dh) / 2;
+      var shown = 0;
+      faces.forEach(function (f) {
+        var x = ox + (f[0] / 100) * dw, y = oy + (f[1] / 100) * dh;
+        var w = (f[2] / 100) * dw, h = (f[3] / 100) * dh;
+        if (x + w < 6 || y + h < 6 || x > S - 6 || y > H - 6) return;
+        var t = document.createElement("span");
+        t.className = "ftag";
+        t.style.left = x + "px"; t.style.top = y + "px";
+        t.style.width = w + "px"; t.style.height = h + "px";
+        t.style.animationDelay = (0.15 + shown * 0.18) + "s";
+        t.innerHTML = "<i></i><i></i><i></i><i></i>";
+        var em = document.createElement("em");
+        em.textContent = f[4];
+        t.appendChild(em);
+        wrap.appendChild(t);
+        setTimeout(function () { t.classList.add("out"); }, 2100 + shown * 180);
+        shown++;
+      });
+      setTimeout(function () { if (wrap.parentNode) wrap.remove(); }, 2800 + shown * 180);
+    };
     deckLayout();
     var deckTimer = null;
     function deckAuto() {
@@ -954,7 +1026,7 @@
       if (!reduced) deckTimer = setInterval(deckCycle, 2000);
     }
     deckAuto();
-    deck.addEventListener("mouseenter", function () { clearInterval(deckTimer); });
+    deck.addEventListener("mouseenter", function () { clearInterval(deckTimer); showTopTags(); });
     deck.addEventListener("mouseleave", deckAuto);
     deck.addEventListener("click", function () { deckCycle(); });
     deck.addEventListener("keydown", function (e) {
@@ -999,25 +1071,54 @@
     document.getElementById("preloader").style.display = "none";
     gsap.set(".reveal, .hero-title .line > span", { opacity: 1, y: 0, clearProps: "transform" });
   } else {
-    /* preloader roll count 00 -> 36 */
+    /* ---- working preloader: pull every frame into cache, show true progress ---- */
     var bootFr = document.getElementById("bootFr");
-    var bootObj = { fr: 0 };
-    gsap.to(bootObj, { fr: 36, duration: 0.85, ease: "power2.inOut", onUpdate: function () {
-      bootFr.textContent = "FR " + pad(Math.round(bootObj.fr)) + "/36";
-    }});
+    var bootBar = document.getElementById("bootBarFill");
+    var assets = (function () {
+      var seen = {};
+      [].forEach.call(document.querySelectorAll("img[src]"), function (im) {
+        var s = im.getAttribute("src");
+        if (s) seen[s] = 1;
+      });
+      if (typeof PILE !== "undefined" && PILE && PILE.forEach) {
+        PILE.forEach(function (it) { seen["assets/polaroids/" + it.f] = 1; });
+      }
+      return Object.keys(seen);
+    })();
+    var totalA = assets.length, doneA = 0, introStarted = false, qi = 0;
+    function bootTick() {
+      var p = totalA ? doneA / totalA : 1;
+      bootFr.textContent = "FR " + pad(Math.round(p * 36)) + "/36 · " + doneA + " OF " + totalA + " DEVELOPED";
+      if (bootBar) bootBar.style.width = (p * 100) + "%";
+      if (doneA >= totalA) startIntro();
+    }
+    function pump() {
+      if (qi >= assets.length) return;
+      var im = new Image();
+      im.onload = im.onerror = function () { doneA++; bootTick(); pump(); };
+      im.src = assets[qi++];
+    }
+    for (var ci = 0; ci < 8; ci++) pump();
+    bootTick();
+    setTimeout(startIntro, 30000); /* never trap a slow connection on the boot screen */
 
     /* ---- intro: boot -> letterbox settle -> title rise ---- */
-    var intro = gsap.timeline({ defaults: { ease: "power3.out" } });
-    intro
-      .to("#preloader", { opacity: 0, duration: 0.5, delay: 1.05, onComplete: function () {
-        document.getElementById("preloader").style.display = "none";
-      }})
-      .from(".bar--top", { yPercent: -100, duration: 0.9 }, "-=0.2")
-      .from(".bar--bottom", { yPercent: 100, duration: 0.9 }, "<")
-      .to(".hero-title .line > span", { y: 0, duration: 1.1, stagger: 0.12, ease: "power4.out" }, "-=0.5")
-      .from(".role-line, .hero-sub, .scroll-cue, .nick-note", { opacity: 0, y: 20, duration: 0.8, stagger: 0.1 }, "-=0.7")
-      .from(".deck-hero", { opacity: 0, duration: 0.9 }, "-=0.5")
-      .from(".hud > div, nav", { opacity: 0, duration: 0.8 }, "-=0.6");
+    function startIntro() {
+      if (introStarted) return;
+      introStarted = true;
+      var intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+      intro
+        .to("#preloader", { opacity: 0, duration: 0.5, delay: 0.25, onComplete: function () {
+          document.getElementById("preloader").style.display = "none";
+        }})
+        .from(".bar--top", { yPercent: -100, duration: 0.9 }, "-=0.2")
+        .from(".bar--bottom", { yPercent: 100, duration: 0.9 }, "<")
+        .to(".hero-title .line > span", { y: 0, duration: 1.1, stagger: 0.12, ease: "power4.out" }, "-=0.5")
+        .from(".role-line, .hero-sub, .scroll-cue, .nick-note", { opacity: 0, y: 20, duration: 0.8, stagger: 0.1 }, "-=0.7")
+        .from(".deck-hero", { opacity: 0, duration: 0.9 }, "-=0.5")
+        .from(".hud > div, nav", { opacity: 0, duration: 0.8 }, "-=0.6")
+        .add(function () { if (typeof showTopTags === "function") showTopTags(); }, "-=0.4");
+    }
 
     /* ---- "aro" pulse: ghost letters fall away, A·RO holds the frame ---- */
     var aroTl = gsap.timeline({ repeat: -1, repeatDelay: 5.5, delay: 3.6 });
