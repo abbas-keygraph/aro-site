@@ -125,9 +125,18 @@
   /* ---------- preloader ---------- */
   #preloader {
     position: fixed; inset: 0; z-index: 101; background: #04070a;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
     font-family: "IBM Plex Mono", monospace; color: var(--hud);
     font-size: 13px; letter-spacing: 0.2em;
+    padding: 0 6vw; text-align: center;
+  }
+  #preloader .boot-count {
+    font-size: 11.5px; letter-spacing: 0.16em; color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 700px) {
+    #preloader { font-size: 11px; letter-spacing: 0.14em; }
+    #preloader .boot-count { font-size: 10.5px; }
   }
   #preloader .boot { display: flex; align-items: center; gap: 0.9em; }
   #preloader .brand { color: var(--amber); }
@@ -514,7 +523,8 @@
 </noscript>
 
 <div id="preloader" aria-hidden="true">
-  <div class="boot"><span class="af-dot"></span><span><span class="brand">aro</span>&nbsp;&nbsp;·&nbsp;&nbsp;DEVELOPING THE ROLL&nbsp;&nbsp;·&nbsp;&nbsp;<span id="bootFr">FR 00/36</span></span></div>
+  <div class="boot"><span class="af-dot"></span><span><span class="brand">aro</span>&nbsp;&nbsp;·&nbsp;&nbsp;DEVELOPING THE ROLL</span></div>
+  <div class="boot-count" id="bootFr">FR 00/36</div>
   <div class="boot-bar"><i id="bootBarFill"></i></div>
 </div>
 
@@ -1153,7 +1163,7 @@
     var totalA = assets.length, doneA = 0, introStarted = false, qi = 0;
     function bootTick() {
       var p = totalA ? doneA / totalA : 1;
-      bootFr.textContent = "FR " + pad(Math.round(p * 36)) + "/36 · " + doneA + " OF " + totalA + " DEVELOPED";
+      bootFr.textContent = "FR " + pad(Math.round(p * 36)) + "/36 · " + doneA + "/" + totalA + " DEVELOPED";
       if (bootBar) bootBar.style.width = (p * 100) + "%";
       if (doneA >= totalA) startIntro();
     }
