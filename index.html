@@ -153,18 +153,18 @@
   #hero {
     min-height: 100vh; display: flex; flex-direction: column;
     justify-content: center;
-    padding: calc(var(--letterbox) + 88px) 6vw calc(var(--letterbox) + 108px);
+    padding: calc(var(--letterbox) + 68px) 6vw calc(var(--letterbox) + 92px);
   }
   #hero .role-line {
     font-family: "IBM Plex Mono", monospace; font-size: clamp(11px, 1.2vw, 14px);
-    letter-spacing: 0.28em; color: var(--ink-dim); margin-bottom: 2.4rem;
+    letter-spacing: 0.28em; color: var(--ink-dim); margin-bottom: clamp(1rem, 3vh, 2.4rem);
     display: flex; gap: 1.4em; flex-wrap: wrap;
   }
   #hero .role-line em { font-style: normal; color: var(--amber); }
   .hero-title {
     font-family: "Bricolage Grotesque", sans-serif;
     font-weight: 800; font-optical-sizing: auto;
-    font-size: clamp(3.4rem, 13.5vw, 12.5rem);
+    font-size: min(clamp(3.4rem, 13.5vw, 12.5rem), 20vh);
     line-height: 0.88; letter-spacing: -0.02em;
     text-transform: uppercase;
     position: relative;
@@ -176,7 +176,7 @@
   .hero-title .gl { display: inline-block; }
   .hero-title .line:nth-child(2) .nick { color: var(--amber); -webkit-text-stroke: 1.5px var(--amber); }
   .nick-note {
-    display: inline-block; margin-top: 1.8rem;
+    display: inline-block; margin-top: clamp(0.8rem, 2.2vh, 1.8rem);
     font-family: "IBM Plex Mono", monospace; font-size: clamp(10px, 1.1vw, 13px);
     letter-spacing: 0.14em; color: var(--ink-dim); text-transform: none;
     -webkit-text-stroke: 0; font-weight: 400;
@@ -185,7 +185,7 @@
   .nick-note b { color: var(--amber); font-weight: 500; }
   @media (max-width: 820px) { .nick-note { display: block; transform: none; } }
   .hero-sub {
-    margin-top: 3.6rem; max-width: 34em; color: var(--ink-dim);
+    margin-top: clamp(1.2rem, 3.8vh, 3.6rem); max-width: 34em; color: var(--ink-dim);
     font-size: clamp(0.95rem, 1.4vw, 1.15rem); line-height: 1.7;
   }
   .hero-sub b { color: var(--ink); font-weight: 600; }
@@ -385,11 +385,15 @@
   /* ---------- hero polaroid deck ---------- */
   .deck-hero {
     position: absolute; right: 7vw; top: 50%;
-    width: clamp(240px, 25vw, 360px);
+    width: min(clamp(240px, 25vw, 360px), 44vh);
     transform: translateY(-50%) rotate(2deg);
     z-index: 3; cursor: pointer;
+    perspective: 900px;
   }
-  .deck-hero .stack { position: relative; display: block; aspect-ratio: 10 / 11.6; }
+  .deck-hero .stack {
+    position: relative; display: block; aspect-ratio: 10 / 11.6;
+    transform-style: preserve-3d; transition: transform 0.3s ease-out;
+  }
   .deck-hero .pcard {
     position: absolute; inset: 0;
     background: #f4efe3; padding: 4.5% 4.5% 0;
@@ -1039,6 +1043,17 @@
       clearTimeout(deckTimer);
       if (reduced || deckHover) return;
       deckTimer = setTimeout(deckCycle, holdFor());
+    }
+    if (canHover && !reduced) {
+      var stackEl = deck.querySelector(".stack");
+      var hero = document.getElementById("hero");
+      hero.addEventListener("mousemove", function (e) {
+        var r = deck.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width / 2)) / innerWidth;
+        var dy = (e.clientY - (r.top + r.height / 2)) / innerHeight;
+        stackEl.style.transform = "rotateY(" + (dx * 9).toFixed(2) + "deg) rotateX(" + (-dy * 9).toFixed(2) + "deg)";
+      });
+      hero.addEventListener("mouseleave", function () { stackEl.style.transform = ""; });
     }
     deckAuto();
     deck.addEventListener("mouseenter", function () { deckHover = true; clearTimeout(deckTimer); showTopTags(); });
