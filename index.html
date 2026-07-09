@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>aro — Abbas Roshan · Solution Engineer × Photographer</title>
+<meta name="description" content="Abbas Roshan (aro) — SOC 2 solution engineer and photographer based in Chennai. Audits by night, shutter by dawn." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a1014;
+    --bg-raise: #0e161c;
+    --strip: #05080b;
+    --teal: #16333c;
+    --teal-line: #1f4550;
+    --ink: #e9e2d4;
+    --ink-dim: #8ba0a8;
+    --amber: #f0982f;
+    --amber-deep: #d96b23;
+    --af-green: #6fe08a;
+    --hud: #9fb7bf;
+    --grain-opacity: 0.06;
+    --letterbox: 9vh;
+  }
+  body.grade-warm {
+    --bg: #140f0a;
+    --bg-raise: #1b140d;
+    --strip: #0b0705;
+    --teal: #3a2712;
+    --teal-line: #4e3418;
+    --ink-dim: #b09a80;
+    --hud: #c9ad86;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scrollbar-gutter: stable; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "Archivo", system-ui, sans-serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    transition: background 1.2s ease;
+    cursor: none;
+  }
+  @media (hover: none), (max-width: 820px) { body { cursor: auto; } }
+  ::selection { background: var(--amber); color: #140f0a; }
+  a { color: inherit; text-decoration: none; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
+
+  /* ---------- grain ---------- */
+  .grain {
+    position: fixed; inset: -100%;
+    width: 300%; height: 300%;
+    pointer-events: none; z-index: 60;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain 0.9s steps(4) infinite;
+  }
+  @keyframes grain {
+    0% { transform: translate(0,0); } 25% { transform: translate(-2%,3%); }
+    50% { transform: translate(3%,-2%); } 75% { transform: translate(-3%,-3%); }
+    100% { transform: translate(2%,2%); }
+  }
+
+  /* ---------- letterbox bars ---------- */
+  .bar { position: fixed; left: 0; width: 100%; height: var(--letterbox); background: #04070a; z-index: 50; pointer-events: none; }
+  .bar--top { top: 0; }
+  .bar--bottom { bottom: 0; }
+
+  /* ---------- shutter transition ---------- */
+  .shutter { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+  .shutter .s { position: absolute; left: 0; width: 100%; height: 50.5%; background: #04070a; transform: scaleY(0); }
+  .shutter .s--t { top: 0; transform-origin: top; }
+  .shutter .s--b { bottom: 0; transform-origin: bottom; }
+
+  /* ---------- HUD ---------- */
+  .hud {
+    position: fixed; inset: 0; z-index: 55; pointer-events: none;
+    font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    letter-spacing: 0.08em; color: var(--hud);
+    transition: color 1.2s ease;
+  }
+  .hud > div { position: fixed; display: flex; gap: 0.9em; align-items: center; }
+  .hud .tl { top: calc(var(--letterbox) + 16px); left: 24px; }
+  .hud .tr { top: calc(var(--letterbox) + 16px); right: 24px; }
+  .hud .bl { bottom: calc(var(--letterbox) + 16px); left: 24px; }
+  .hud .br { bottom: calc(var(--letterbox) + 16px); right: 24px; }
+  .hud .brand { color: var(--amber); font-weight: 500; letter-spacing: 0.04em; }
+  .af-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--af-green); animation: blink 1.6s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0.15; } }
+  @media (max-width: 820px) {
+    .hud .tr, .hud .bl { display: none; }
+    .hud .tl { left: 16px; } .hud .br { right: 16px; }
+  }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: fixed; top: calc(var(--letterbox) + 8px); left: 0; width: 100%;
+    display: flex; justify-content: center; z-index: 56;
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 0.1em;
+  }
+  nav .links { display: flex; gap: 2.2em; pointer-events: auto; }
+  nav a { color: var(--ink-dim); transition: color 0.25s; padding: 6px 2px; }
+  nav a:hover { color: var(--amber); }
+  @media (max-width: 820px) { nav { display: none; } }
+
+  /* ---------- cursor reticle ---------- */
+  .reticle {
+    position: fixed; z-index: 99; width: 34px; height: 34px;
+    pointer-events: none; top: 0; left: 0;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s, height 0.25s;
+  }
+  .reticle span { position: absolute; width: 9px; height: 9px; border: 1.5px solid var(--amber); }
+  .reticle span:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+  .reticle span:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+  .reticle span:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+  .reticle span:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+  .reticle.is-hover { width: 56px; height: 56px; }
+  .reticle.is-hover span { border-color: var(--af-green); }
+  @media (hover: none), (max-width: 820px) { .reticle { display: none; } }
+
+  /* ---------- preloader ---------- */
+  #preloader {
+    position: fixed; inset: 0; z-index: 101; background: #04070a;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "IBM Plex Mono", monospace; color: var(--hud);
+    font-size: 13px; letter-spacing: 0.2em;
+  }
+  #preloader .boot { display: flex; align-items: center; gap: 0.9em; }
+  #preloader .brand { color: var(--amber); }
+
+  /* ---------- layout primitives ---------- */
+  section { position: relative; padding: 18vh 6vw; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px;
+    letter-spacing: 0.22em; color: var(--amber);
+    display: flex; align-items: center; gap: 1em; margin-bottom: 3rem;
+  }
+  .eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--teal-line); }
+
+  /* ---------- hero ---------- */
+  #hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding: 0 6vw;
+  }
+  #hero .role-line {
+    font-family: "IBM Plex Mono", monospace; font-size: clamp(11px, 1.2vw, 14px);
+    letter-spacing: 0.28em; color: var(--ink-dim); margin-bottom: 2.4rem;
+    display: flex; gap: 1.4em; flex-wrap: wrap;
+  }
+  #hero .role-line em { font-style: normal; color: var(--amber); }
+  .hero-title {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 800; font-optical-sizing: auto;
+    font-size: clamp(3.4rem, 13.5vw, 12.5rem);
+    line-height: 0.88; letter-spacing: -0.02em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .hero-title .line { display: block; overflow: hidden; }
+  .hero-title .line > span { display: block; transform: translateY(110%); }
+  .hero-title .line:nth-child(2) > span { color: transparent; -webkit-text-stroke: 1.5px var(--ink); }
+  .hero-title .nick { color: var(--amber); -webkit-text-stroke: 0; transition: color 0.4s; }
+  .hero-title .gl { display: inline-block; }
+  .hero-title .line:nth-child(2) .nick { color: var(--amber); -webkit-text-stroke: 1.5px var(--amber); }
+  .nick-note {
+    display: inline-block; margin-top: 1.8rem;
+    font-family: "IBM Plex Mono", monospace; font-size: clamp(10px, 1.1vw, 13px);
+    letter-spacing: 0.14em; color: var(--ink-dim); text-transform: none;
+    -webkit-text-stroke: 0; font-weight: 400;
+    transform: rotate(-1.5deg);
+  }
+  .nick-note b { color: var(--amber); font-weight: 500; }
+  @media (max-width: 820px) { .nick-note { display: block; transform: none; } }
+  .hero-sub {
+    margin-top: 3.6rem; max-width: 34em; color: var(--ink-dim);
+    font-size: clamp(0.95rem, 1.4vw, 1.15rem); line-height: 1.7;
+  }
+  .hero-sub b { color: var(--ink); font-weight: 600; }
+  .scroll-cue {
+    position: absolute; bottom: calc(var(--letterbox) + 42px); left: 6vw;
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.2em;
+    color: var(--ink-dim); display: flex; align-items: center; gap: 1em;
+  }
+  .scroll-cue::after { content: ""; width: 52px; height: 1px; background: var(--amber); animation: cue 1.8s ease-in-out infinite; transform-origin: left; }
+  @keyframes cue { 0%,100% { transform: scaleX(0.3); } 50% { transform: scaleX(1); } }
+
+  /* ---------- film-strip marquee ---------- */
+  .filmstrip { background: var(--strip); border-top: 1px solid #000; border-bottom: 1px solid #000; transition: background 1.2s ease; }
+  .filmstrip .holes {
+    height: 15px;
+    background-image: radial-gradient(4.5px 5.5px at 17px 50%, var(--bg-raise) 97%, transparent 100%);
+    background-size: 34px 100%; background-repeat: repeat-x;
+    transition: background-image 1.2s ease;
+  }
+  .filmstrip .track-wrap { overflow: hidden; padding: 1rem 0; border-top: 1px solid var(--teal-line); border-bottom: 1px solid var(--teal-line); }
+  .filmstrip .track { display: flex; width: max-content; animation: marquee 30s linear infinite; }
+  .filmstrip span {
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; letter-spacing: 0.18em;
+    color: var(--ink-dim); padding: 0 1.6em; white-space: nowrap;
+  }
+  .filmstrip span::after { content: "◆"; color: var(--amber); margin-left: 3.2em; font-size: 8px; vertical-align: middle; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* ---------- work ---------- */
+  .work-row {
+    display: grid; grid-template-columns: 110px 1fr auto;
+    gap: 2.4rem; align-items: baseline;
+    padding: 3.2rem 0; border-bottom: 1px solid var(--teal-line);
+    position: relative;
+  }
+  .work-row:first-of-type { border-top: 1px solid var(--teal-line); }
+  .work-row .tc {
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--ink-dim);
+    letter-spacing: 0.08em;
+  }
+  .work-row h3 {
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 700;
+    font-size: clamp(1.6rem, 3.8vw, 3.2rem); text-transform: uppercase;
+    letter-spacing: -0.01em; line-height: 1.05;
+    transition: color 0.3s;
+  }
+  .work-row:hover h3 { color: var(--amber); }
+  .work-row .desc { grid-column: 2; max-width: 46em; color: var(--ink-dim); line-height: 1.7; margin-top: 1rem; font-size: 0.98rem; }
+  .work-row .desc b { color: var(--ink); font-weight: 600; }
+  .work-row .tags {
+    display: flex; gap: 0.6em; flex-wrap: wrap; justify-content: flex-end;
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: 0.12em;
+  }
+  .tag { border: 1px solid var(--teal-line); color: var(--ink-dim); padding: 0.45em 0.9em; border-radius: 2em; white-space: nowrap; }
+  .tag--live { border-color: var(--amber-deep); color: var(--amber); }
+  .tag--live::before { content: "●"; color: #e03a2f; margin-right: 0.6em; font-size: 8px; animation: blink 1.4s steps(1) infinite; }
+  @media (max-width: 820px) {
+    .work-row { grid-template-columns: 1fr; gap: 0.9rem; }
+    .work-row .desc { grid-column: 1; }
+    .work-row .tags { justify-content: flex-start; }
+  }
+
+  /* ---------- hover preview: film negative frames ---------- */
+  .preview {
+    position: fixed; z-index: 80; width: 300px; pointer-events: none;
+    top: 0; left: 0; opacity: 0;
+    filter: drop-shadow(0 24px 48px rgba(0,0,0,0.55));
+  }
+  .neg { background: var(--strip); padding: 12px 0; border: 1px solid #000; }
+  .neg .holes {
+    height: 12px;
+    background-image: radial-gradient(3.5px 4.5px at 13px 50%, #1b2b31 97%, transparent 100%);
+    background-size: 26px 100%; background-repeat: repeat-x;
+  }
+  .neg .frame { margin: 8px 14px; border: 1px solid var(--teal-line); background: var(--bg-raise); }
+  .neg svg { display: block; width: 100%; height: auto; }
+  .neg .cap {
+    font-family: "IBM Plex Mono", monospace; font-size: 9.5px; letter-spacing: 0.18em;
+    color: var(--ink-dim); display: flex; justify-content: space-between; padding: 6px 16px 0;
+  }
+  .neg .cap b { color: var(--amber); font-weight: 500; }
+  @media (hover: none), (max-width: 1000px) { .preview { display: none !important; } }
+
+  /* ---------- proof strip ---------- */
+  .proof {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1px; background: var(--teal-line); border: 1px solid var(--teal-line);
+  }
+  .proof div { background: var(--bg); padding: 2.2rem 1.8rem; transition: background 1.2s ease; }
+  .proof .k { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 2rem; color: var(--amber); }
+  .proof .v { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: 0.14em; color: var(--ink-dim); margin-top: 0.7rem; line-height: 1.6; }
+
+  /* ---------- stack / spec sheet ---------- */
+  #stack { padding-top: 10vh; }
+  .stack-row {
+    display: grid; grid-template-columns: 220px 1fr; gap: 2.2rem; align-items: baseline;
+    padding: 1.7rem 0; border-bottom: 1px solid var(--teal-line);
+  }
+  .stack-row:first-of-type { border-top: 1px solid var(--teal-line); }
+  .stack-row .cat {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    letter-spacing: 0.22em; color: var(--ink-dim);
+  }
+  .stack-row .chips { display: flex; gap: 0.6em; flex-wrap: wrap; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: 0.12em; }
+  .tag--main { border-color: var(--amber-deep); color: var(--amber); }
+  .stack-note {
+    margin-top: 2.6rem; font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    letter-spacing: 0.14em; color: var(--ink-dim);
+  }
+  .stack-note b { color: var(--amber); font-weight: 500; }
+  @media (max-width: 820px) {
+    .stack-row { grid-template-columns: 1fr; gap: 0.9rem; }
+  }
+
+  /* ---------- after hours ---------- */
+  #after-hours .big {
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 800;
+    font-size: clamp(3rem, 11vw, 10rem); text-transform: uppercase; line-height: 0.9;
+    letter-spacing: -0.02em; margin-bottom: 4rem;
+  }
+  #after-hours .big em { font-style: normal; color: var(--amber); }
+  .garage { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; margin: 3rem 0; }
+  .bike {
+    border: 1px solid var(--teal-line); padding: 2.2rem;
+    background: var(--bg-raise); transition: border-color 0.3s, background 1.2s ease;
+  }
+  .bike:hover { border-color: var(--amber-deep); }
+  .bike .make { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.22em; color: var(--ink-dim); }
+  .bike h4 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.4rem); text-transform: uppercase; margin: 0.6rem 0 1.2rem; }
+  .bike .spec { display: flex; justify-content: space-between; font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--ink-dim); padding: 0.55em 0; border-top: 1px solid var(--teal-line); }
+  .bike .spec b { color: var(--amber); font-weight: 500; text-align: right; }
+  @media (max-width: 820px) { .garage { grid-template-columns: 1fr; } }
+  .gear-line {
+    margin-top: 3rem; font-family: "IBM Plex Mono", monospace; font-size: 12.5px;
+    letter-spacing: 0.1em; color: var(--ink-dim); line-height: 2.1;
+  }
+  .gear-line b { color: var(--ink); font-weight: 500; }
+  #after-hours .copy { max-width: 40em; color: var(--ink-dim); line-height: 1.8; font-size: 1.02rem; }
+  #after-hours .copy b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- frames gallery ---------- */
+  #frames .intro { max-width: 40em; color: var(--ink-dim); line-height: 1.8; font-size: 1.02rem; margin-bottom: 4rem; }
+  #frames .intro b { color: var(--ink); font-weight: 600; }
+  .sheet { columns: 3; column-gap: 1.4rem; }
+  @media (max-width: 1100px) { .sheet { columns: 2; } }
+  @media (max-width: 640px) { .sheet { columns: 1; } }
+  .ph {
+    display: block; width: 100%; break-inside: avoid; margin: 0 0 1.4rem;
+    border: 1px solid var(--teal-line); background: var(--strip);
+    padding: 10px 10px 0; cursor: pointer; text-align: left;
+    font: inherit; color: inherit; appearance: none;
+    transition: border-color 0.3s, translate 0.3s;
+  }
+  .ph .img-wrap { display: block; overflow: hidden; background: var(--bg-raise); }
+  .ph img {
+    display: block; width: 100%; height: auto;
+    filter: saturate(0.92) contrast(1.03);
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.4s;
+  }
+  @media (hover: hover) {
+    .ph:hover { border-color: var(--amber-deep); translate: 0 -4px; }
+    .ph:hover img { transform: scale(1.035); filter: saturate(1.05) contrast(1.05); }
+  }
+  .ph .cap {
+    display: flex; justify-content: space-between; gap: 1em; align-items: baseline;
+    font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.16em;
+    color: var(--ink-dim); padding: 10px 4px 12px; text-transform: uppercase;
+  }
+  .ph .cap b { color: var(--amber); font-weight: 500; white-space: nowrap; }
+
+  /* ---------- lightbox ---------- */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 98; background: rgba(3, 6, 9, 0.94);
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s; padding: 4vh 4vw;
+  }
+  .lightbox.open { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 0.3s ease; }
+  .lightbox img {
+    max-width: 92vw; max-height: 80vh; display: block;
+    border: 1px solid var(--teal-line);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  }
+  .lightbox .lb-cap {
+    margin-top: 1.4rem; font-family: "IBM Plex Mono", monospace; font-size: 11px;
+    letter-spacing: 0.18em; color: var(--ink-dim); text-transform: uppercase;
+    display: flex; gap: 2em; align-items: baseline;
+  }
+  .lightbox .lb-cap b { color: var(--amber); font-weight: 500; }
+  .lightbox .lb-hint {
+    position: absolute; top: calc(var(--letterbox) + 18px); right: 28px;
+    font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--ink-dim);
+    background: none; border: 0; padding: 6px 2px; cursor: pointer; appearance: none;
+  }
+  .lightbox .lb-hint:hover { color: var(--amber); }
+
+  /* ---------- hero polaroid deck ---------- */
+  .deck-hero {
+    position: absolute; right: 7vw; top: 50%;
+    width: clamp(240px, 25vw, 360px);
+    transform: translateY(-50%) rotate(2deg);
+    z-index: 3; cursor: pointer;
+  }
+  .deck-hero .stack { position: relative; display: block; aspect-ratio: 10 / 11.6; }
+  .deck-hero .pcard {
+    position: absolute; inset: 0;
+    background: #f4efe3; padding: 4.5% 4.5% 0;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
+    transition: transform 0.55s cubic-bezier(0.25, 0.8, 0.3, 1), opacity 0.55s;
+    will-change: transform;
+  }
+  .deck-hero .pcard img {
+    display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
+    filter: saturate(0.92) contrast(1.03); pointer-events: none;
+  }
+  .deck-hero .chin {
+    display: block; height: 0; position: relative;
+  }
+  .deck-hero .chin span {
+    position: absolute; left: 2px; right: 2px; top: 8%;
+    font-family: "Caveat", cursive; font-size: clamp(15px, 1.5vw, 22px); color: #4b4232;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+  }
+  .deck-hero .deck-cap {
+    display: block; margin-top: 1rem; text-align: center;
+    font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.2em;
+    color: var(--ink-dim); transition: color 0.25s;
+  }
+  .deck-hero:hover .deck-cap { color: var(--amber); }
+  @media (max-width: 1200px) {
+    .deck-hero { position: relative; right: auto; top: auto; transform: rotate(1.5deg); margin: 4rem auto 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deck-hero .pcard { transition: none; }
+  }
+
+  /* ---------- contact ---------- */
+  #contact { text-align: center; padding-bottom: 26vh; overflow: hidden; }
+  #contact::before {
+    content: "aro"; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 800;
+    font-size: clamp(14rem, 42vw, 40rem); line-height: 1;
+    color: transparent; -webkit-text-stroke: 1px var(--teal-line);
+    opacity: 0.55; pointer-events: none; user-select: none;
+    transition: -webkit-text-stroke 1.2s ease;
+  }
+  #contact > * { position: relative; }
+  #contact .say {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 0.24em;
+    color: var(--ink-dim); margin-bottom: 2.4rem;
+  }
+  .email {
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 800;
+    font-size: clamp(1.5rem, 5.4vw, 4.6rem); text-transform: lowercase;
+    letter-spacing: -0.01em; display: inline-block;
+    border-bottom: 3px solid var(--amber-deep);
+    transition: color 0.3s;
+  }
+  .email:hover { color: var(--amber); }
+  .socials { margin-top: 3.4rem; display: flex; justify-content: center; gap: 2.6em; font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 0.16em; flex-wrap: wrap; }
+  .socials a { color: var(--ink-dim); transition: color 0.25s; }
+  .socials a:hover { color: var(--amber); }
+  footer {
+    padding: 2rem 6vw calc(var(--letterbox) + 2rem);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1em;
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: 0.14em;
+    color: var(--ink-dim); border-top: 1px solid var(--teal-line);
+  }
+
+  /* ---------- reveal defaults (JS animates) ---------- */
+  .reveal { opacity: 0; transform: translateY(36px); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; }
+    .grain, .filmstrip .track, .af-dot, .scroll-cue::after, .tag--live::before { animation: none !important; }
+    .hero-title .line > span { transform: none; }
+    html { scroll-behavior: auto; }
+    .ph, .ph img { transition: none; }
+    .ph:hover { translate: none; }
+    .ph:hover img { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<noscript>
+  <style>
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .hero-title .line > span { transform: none !important; }
+    #preloader, .reticle, .preview { display: none !important; }
+  </style>
+</noscript>
+
+<div id="preloader" aria-hidden="true">
+  <div class="boot"><span class="af-dot"></span><span><span class="brand">aro</span>&nbsp;&nbsp;·&nbsp;&nbsp;METERING LIGHT&nbsp;&nbsp;·&nbsp;&nbsp;<span id="bootFr">FR 00/36</span></span></div>
+</div>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="bar bar--top" aria-hidden="true"></div>
+<div class="bar bar--bottom" aria-hidden="true"></div>
+<div class="shutter" aria-hidden="true"><div class="s s--t"></div><div class="s s--b"></div></div>
+
+<div class="hud" aria-hidden="true">
+  <div class="tl"><span class="brand">aro.</span><span class="af-dot"></span><span id="frameCounter">FR 01/36</span></div>
+  <div class="tr"><span>RAW · AWB · +0.3 EV</span></div>
+  <div class="bl"><span>CHENNAI · 13.08°N 80.27°E</span></div>
+  <div class="br"><span>ISO 800 · ƒ/2.8 · 1/250</span></div>
+</div>
+
+<nav aria-label="Primary">
+  <div class="links">
+    <a href="#work">WORK</a>
+    <a href="#stack">STACK</a>
+    <a href="#after-hours">AFTER HOURS</a>
+    <a href="#frames">FRAMES</a>
+    <a href="#contact">CONTACT</a>
+  </div>
+</nav>
+
+<div class="reticle" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<!-- floating film-negative preview (filled by JS on work-row hover) -->
+<div class="preview" aria-hidden="true">
+  <div class="neg">
+    <div class="holes"></div>
+    <div class="frame"><svg id="previewSvg" viewBox="0 0 272 170" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <p class="cap"><b id="previewCap">—</b><span id="previewFr">FR —</span></p>
+    <div class="holes" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- lightbox for gallery frames -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" tabindex="-1">
+  <button class="lb-hint" type="button" id="lbClose" aria-label="Close photo viewer">ESC / CLICK TO EJECT</button>
+  <img id="lbImg" src="" alt="" />
+  <p class="lb-cap"><b id="lbFr">FR —</b><span id="lbCap">—</span></p>
+</div>
+
+<main>
+  <!-- HERO -->
+  <section id="hero">
+    <p class="role-line"><em>SOLUTION ENGINEER</em><span>SOC 2 · SECURITY</span><span>×</span><em>PHOTOGRAPHER</em><span>CHENNAI, IN</span></p>
+    <h1 class="hero-title">
+      <span class="line"><span><span class="nick">A</span><span class="gl">b</span><span class="gl">b</span><span class="gl">a</span><span class="gl">s</span></span></span>
+      <span class="line"><span><span class="nick">Ro</span><span class="gl">s</span><span class="gl">h</span><span class="gl">a</span><span class="gl">n</span></span></span>
+      <span class="nick-note">( the amber letters spell it — call me <b>aro</b> )</span>
+    </h1>
+    <p class="hero-sub">I run <b>SOC 2 audits end-to-end</b> for B2B SaaS startups — scoping, evidence, system descriptions, auditor calls — and build <b>edge AI systems</b> that watch the physical world. I've been making <b>photographs since high school</b>; when the night shift ends, Chennai at dawn is the subject.</p>
+    <div class="deck-hero" id="heroDeck" role="button" tabindex="0" aria-label="Polaroid pile — click to shuffle">
+      <span class="stack">
+        <span class="pcard"><img src="assets/polaroids/img-0553-0.jpg" alt="Polaroid of Balaji, Aro and JD in suits" /><span class="chin"><span>Balaji · Aro · JD</span></span></span>
+        <span class="pcard"><img src="assets/polaroids/img-3785.jpg" alt="Polaroid of Aro with his mom Gomathi" loading="lazy" /><span class="chin"><span>Aro · Gomathi (Mummy)</span></span></span>
+        <span class="pcard"><img src="assets/polaroids/img-5041.jpg" alt="Polaroid of six friends" loading="lazy" /><span class="chin"><span>Aadithya · Godwin · Ajay · Siva · Narmadha · Aro</span></span></span>
+        <span class="pcard"><img src="assets/polaroids/img-5006.jpg" alt="Polaroid of Aro and Narmadha" loading="lazy" /><span class="chin"><span>Aro · Narmadha</span></span></span>
+        <span class="pcard"><img src="assets/polaroids/img-1822.jpg" alt="Polaroid of six friends" loading="lazy" /><span class="chin"><span>Guru Karthik · Karthik Raja · Aro · Surya Deepan</span></span></span>
+        <span class="pcard"><img src="assets/polaroids/img-4753.jpg" alt="Polaroid of Sivadharani, Ajay Anand and Aro" loading="lazy" /><span class="chin"><span>Sivadharani · Ajay Anand · Aro</span></span></span>
+        <span class="pcard"><img src="assets/polaroids/img-4926.jpg" alt="Polaroid of Sivadharani, Aro and Jervin" loading="lazy" /><span class="chin"><span>Sivadharani · Aro · Jervin</span></span></span>
+        <span class="pcard"><img src="assets/polaroids/img-3920.jpg" alt="Polaroid of Guru Karthik, Sami, Aro and Karthik Raja" loading="lazy" /><span class="chin"><span>Guru Karthik · Sami · Aro · Karthik Raja</span></span></span>
+      </span>
+      <span class="deck-cap">THE PILE · CLICK TO SHUFFLE</span>
+    </div>
+    <div class="scroll-cue">SCROLL TO ADVANCE THE ROLL</div>
+  </section>
+
+  <!-- FILM STRIP MARQUEE -->
+  <div class="filmstrip" aria-hidden="true">
+    <div class="holes"></div>
+    <div class="track-wrap">
+      <div class="track">
+        <span>SOC 2 TYPE II</span><span>EDGE AI / COMPUTER VISION</span><span>PENETRATION TESTING</span><span>LARAVEL</span><span>NEXT.JS</span><span>TEMPORAL</span><span>RASPBERRY PI</span><span>STREET PHOTOGRAPHY</span><span>GOLDEN HOUR</span><span>155CC</span>
+        <span>SOC 2 TYPE II</span><span>EDGE AI / COMPUTER VISION</span><span>PENETRATION TESTING</span><span>LARAVEL</span><span>NEXT.JS</span><span>TEMPORAL</span><span>RASPBERRY PI</span><span>STREET PHOTOGRAPHY</span><span>GOLDEN HOUR</span><span>155CC</span>
+      </div>
+    </div>
+    <div class="holes"></div>
+  </div>
+
+  <!-- WORK -->
+  <section id="work">
+    <p class="eyebrow reveal">ROLL 01 — SELECTED WORK</p>
+
+    <article class="work-row reveal" data-preview="soc2" data-cap="COMPLIANCE, IN FOCUS">
+      <span class="tc">FR 01</span>
+      <h3>SOC 2 Engagements</h3>
+      <div class="tags"><span class="tag tag--live">NOW</span><span class="tag">COMPLIANCE</span><span class="tag">SECURITY</span></div>
+      <p class="desc">End-to-end <b>SOC 2 Type II</b> engagements for a portfolio of B2B SaaS startups at <b>Keygraph</b> — scoping, evidence collection, system description drafting, auditor coordination, and draft-report review. I read audit reports the way photographers read contact sheets: looking for the frames that don't belong.</p>
+    </article>
+
+    <article class="work-row reveal" data-preview="sast" data-cap="NEGATIVES, INSPECTED">
+      <span class="tc">FR 02</span>
+      <h3>Keygraph SAST</h3>
+      <div class="tags"><span class="tag">GO</span><span class="tag">TEMPORAL</span><span class="tag">LLM</span></div>
+      <p class="desc">An <b>AI-powered static analysis scanner</b> that hunts OWASP Top 10 vulnerabilities in GitHub repositories. A Go backend drives <b>Temporal-orchestrated scan workflows</b>, LLM analysis through BAML-defined prompts, PostgreSQL with sqlc, and a Next.js dashboard behind Google OAuth — the whole rig ships as Docker Compose.</p>
+    </article>
+
+    <article class="work-row reveal" data-preview="exit" data-cap="THE EDGE, WATCHING">
+      <span class="tc">FR 03</span>
+      <h3>Exit Detection Device</h3>
+      <div class="tags"><span class="tag tag--live">ONGOING</span><span class="tag">EDGE AI</span><span class="tag">CV</span></div>
+      <p class="desc">An on-device computer vision system for <b>real-time exit-path obstruction detection</b> in industrial spaces. Open-vocabulary detection running on embedded hardware at the edge — no cloud round-trips, no footage leaving the site. Currently in active development.</p>
+    </article>
+
+    <article class="work-row reveal" data-preview="aito" data-cap="RETRIEVAL, AUGMENTED">
+      <span class="tc">FR 04</span>
+      <h3>AITO</h3>
+      <div class="tags"><span class="tag">RAG</span><span class="tag">NEXT.JS</span><span class="tag">VOICE AI</span></div>
+      <p class="desc">An AI assistant built on <b>retrieval-augmented generation</b> — a history-aware LangChain pipeline over a <b>Milvus vector store</b> (local Llama via Ollama, later OpenAI), a Next.js 14 front with NextAuth and MongoDB, and <b>real-time voice conversations</b> through ElevenLabs conversational AI. Led development from architecture to ship.</p>
+    </article>
+
+    <article class="work-row reveal" data-preview="kumon" data-cap="ROLL CALL, DIGITISED">
+      <span class="tc">FR 05</span>
+      <h3>EduOrbit Portal</h3>
+      <div class="tags"><span class="tag">TYPESCRIPT</span><span class="tag">DOCKER</span><span class="tag">FULL-STACK</span></div>
+      <p class="desc">A management portal for a <b>Kumon-franchise tuition centre</b> — student records, attendance with date filters and manual entry, overtime tracking, and settings administration. Full-stack TypeScript delivered in <b>phased releases</b> with a Dockerized deploy.</p>
+    </article>
+
+    <article class="work-row reveal" data-preview="bookezy" data-cap="ADMIT ONE">
+      <span class="tc">FR 06</span>
+      <h3>Bookezy</h3>
+      <div class="tags"><span class="tag">LARAVEL</span><span class="tag">REDIS</span><span class="tag">RAZORPAY</span></div>
+      <p class="desc">An event management and booking platform with a full admin panel — events, artists, venues, ticket pricing. Holds tickets for <b>10 minutes during checkout</b> with Redis-backed reservations, and verifies payments through Razorpay.</p>
+    </article>
+
+    <article class="work-row reveal" data-preview="ksp" data-cap="MISE EN PLACE">
+      <span class="tc">FR 07</span>
+      <h3>Kitchens Strategic Project</h3>
+      <div class="tags"><span class="tag">LARAVEL</span><span class="tag">OPS</span><span class="tag">UK CLIENT</span></div>
+      <p class="desc">Operations platform for a UK kitchen-solutions company — <b>purchase orders, inventory, SOP tracking, scheduling, returns</b> — with data sync, geolocation, and reporting built to fit the way the client actually works.</p>
+    </article>
+  </section>
+
+  <!-- PROOF STRIP -->
+  <section style="padding-top: 0;">
+    <div class="proof reveal">
+      <div><p class="k">1st</p><p class="v">CYBER O DAY — 24H CTF<br/>200+ PARTICIPANTS</p></div>
+      <div><p class="k">E2E</p><p class="v">SOC 2 ENGAGEMENTS RUN<br/>SCOPE → REPORT</p></div>
+      <div><p class="k">5+</p><p class="v">PRODUCTION LARAVEL BUILDS<br/>SHIPPED FOR CLIENTS</p></div>
+      <div><p class="k">B.Tech</p><p class="v">CSE — CYBER-PHYSICAL SYSTEMS<br/>VIT CHENNAI, 2025</p></div>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <p class="eyebrow reveal">SPEC SHEET — KNOWN STACKS</p>
+
+    <div class="stack-row reveal">
+      <p class="cat">LANGUAGES</p>
+      <div class="chips">
+        <span class="tag tag--main">PYTHON</span><span class="tag tag--main">TYPESCRIPT</span><span class="tag tag--main">PHP</span><span class="tag">GO</span><span class="tag">JAVASCRIPT</span><span class="tag">C / C++</span><span class="tag">JAVA</span><span class="tag">BASH</span><span class="tag">HTML / CSS</span>
+      </div>
+    </div>
+
+    <div class="stack-row reveal">
+      <p class="cat">FRAMEWORKS</p>
+      <div class="chips">
+        <span class="tag tag--main">LARAVEL</span><span class="tag tag--main">NEXT.JS</span><span class="tag">REACT</span><span class="tag">REACT NATIVE</span><span class="tag">NODE.JS</span><span class="tag">TAILWIND</span><span class="tag">BOOTSTRAP</span><span class="tag">ALPINE.JS</span>
+      </div>
+    </div>
+
+    <div class="stack-row reveal">
+      <p class="cat">AI &amp; EDGE</p>
+      <div class="chips">
+        <span class="tag tag--main">RAG / VECTOR DBS</span><span class="tag">LANGCHAIN</span><span class="tag">OLLAMA</span><span class="tag">LLAMA 3.2</span><span class="tag">OPENAI API</span><span class="tag">ELEVENLABS</span><span class="tag">OPEN-VOCABULARY CV</span><span class="tag">RASPBERRY PI</span>
+      </div>
+    </div>
+
+    <div class="stack-row reveal">
+      <p class="cat">ORCHESTRATION &amp; INFRA</p>
+      <div class="chips">
+        <span class="tag tag--main">TEMPORAL</span><span class="tag">DOCKER</span><span class="tag">AWS</span><span class="tag">FIREBASE</span><span class="tag">AZURE DEVOPS</span><span class="tag">GIT</span>
+      </div>
+    </div>
+
+    <div class="stack-row reveal">
+      <p class="cat">DATA</p>
+      <div class="chips">
+        <span class="tag">MYSQL</span><span class="tag">POSTGRESQL</span><span class="tag">MONGODB</span><span class="tag">REDIS</span><span class="tag">MILVUS</span><span class="tag">FIREBASE RTDB</span>
+      </div>
+    </div>
+
+    <div class="stack-row reveal">
+      <p class="cat">SECURITY</p>
+      <div class="chips">
+        <span class="tag tag--main">BURP SUITE</span><span class="tag">KALI LINUX</span><span class="tag">METASPLOIT</span><span class="tag">WIRESHARK</span><span class="tag">AIRCRACK-NG</span>
+      </div>
+    </div>
+
+    <div class="stack-row reveal">
+      <p class="cat">TESTING &amp; PAYMENTS</p>
+      <div class="chips">
+        <span class="tag">PESTPHP</span><span class="tag">SELENIUM</span><span class="tag">REST APIS</span><span class="tag">RAZORPAY</span>
+      </div>
+    </div>
+
+    <p class="stack-note reveal">AMBER CHIPS = <b>DAILY DRIVERS</b> · EVERYTHING ELSE STAYS IN THE BAG, ZEROED AND READY</p>
+  </section>
+
+  <!-- AFTER HOURS -->
+  <section id="after-hours">
+    <p class="eyebrow reveal">ROLL 02 — AFTER HOURS</p>
+    <h2 class="big reveal">Golden<br/><em>hour</em></h2>
+    <p class="copy reveal">The other half of the roll. I've been a <b>photographer since high school</b> — Chennai streets, golden hour, monsoon grey. The same eye that reads audit evidence reads light. This whole site shifts warm down here for a reason.</p>
+
+    <div class="garage">
+      <div class="bike reveal">
+        <p class="make">THE PRACTICE</p>
+        <h4>Photography</h4>
+        <p class="spec"><span>SHOOTING SINCE</span><b>HIGH SCHOOL</b></p>
+        <p class="spec"><span>SUBJECT</span><b>STREETS &amp; LIGHT</b></p>
+        <p class="spec"><span>CONDITIONS</span><b>RAIN OR SHINE</b></p>
+      </div>
+      <div class="bike reveal">
+        <p class="make">YAMAHA — THE RIDE</p>
+        <h4>MT-15</h4>
+        <p class="spec"><span>DISPLACEMENT</span><b>155 CC</b></p>
+        <p class="spec"><span>DUTY</span><b>CHASING LIGHT</b></p>
+        <p class="spec"><span>ROLE</span><b>TRIPOD WITH A THROTTLE</b></p>
+      </div>
+    </div>
+
+    <p class="gear-line reveal">CHENNAI, FIRST LIGHT · <b>GRAIN IS A FEATURE</b> · GRADED WARM, ALWAYS · 155CC BETWEEN FRAMES</p>
+  </section>
+
+  <!-- FRAMES -->
+  <section id="frames">
+    <p class="eyebrow reveal">ROLL 03 — FRAMES</p>
+    <p class="intro reveal">Developed from the archive — <b>streets, stage smoke, stunt dust, hill roads and shoreline</b>. Chennai, the coast road south, and the tea country up the ghats. Click a frame to hold it up to the light.</p>
+    <div class="sheet">
+      <button class="ph reveal" data-cap="STUNT RUN — GOLDEN DUST"><span class="img-wrap"><img src="assets/photos/stunt-handstand.jpg" width="1066" height="1600" alt="Stunt rider doing a handstand on a moving motorcycle through golden dust" loading="lazy" /></span><span class="cap"><b>FR 14</b><span>STUNT RUN · GOLDEN DUST</span></span></button>
+      <button class="ph reveal" data-cap="FILAMENTS, AFTER CLOSE"><span class="img-wrap"><img src="assets/photos/bulbs.jpg" width="1600" height="1059" alt="Warm amber filament bulbs hanging in a dark café" loading="lazy" /></span><span class="cap"><b>FR 15</b><span>FILAMENTS · AFTER CLOSE</span></span></button>
+      <button class="ph reveal" data-cap="STAGE, MONOCHROME SMOKE"><span class="img-wrap"><img src="assets/photos/stage-bw.jpg" width="1066" height="1600" alt="Black and white photo of a guitarist bowed forward in stage smoke" loading="lazy" /></span><span class="cap"><b>FR 16</b><span>STAGE · MONOCHROME</span></span></button>
+      <button class="ph reveal" data-cap="PIGEON SCRAMBLE, CHENNAI"><span class="img-wrap"><img src="assets/photos/pigeons.jpg" width="1600" height="1059" alt="Pigeons scattering in front of pastel-coloured Chennai buildings as a boy runs past" loading="lazy" /></span><span class="cap"><b>FR 17</b><span>PIGEON SCRAMBLE · CHENNAI</span></span></button>
+      <button class="ph reveal" data-cap="RIGHT OF WAY, GOLDEN HOUR"><span class="img-wrap"><img src="assets/photos/stag-crossing.jpg" width="1067" height="1600" alt="Chital stag crossing an empty highway in golden-hour haze as a car waits behind" loading="lazy" /></span><span class="cap"><b>FR 18</b><span>RIGHT OF WAY · GOLDEN HOUR</span></span></button>
+      <button class="ph reveal" data-cap="THE PACK, LIT"><span class="img-wrap"><img src="assets/photos/pack-lights.jpg" width="1600" height="1066" alt="Three motorcycles with headlights glowing at blue hour against ember sunset clouds and dark hills" loading="lazy" /></span><span class="cap"><b>FR 19</b><span>THE PACK · BLUE HOUR</span></span></button>
+      <button class="ph reveal" data-cap="WINDOW LIGHT STUDY"><span class="img-wrap"><img src="assets/photos/window-light.jpg" width="1059" height="1600" alt="Portrait of a young man in glasses lit by hard window light against a blue wall" loading="lazy" /></span><span class="cap"><b>FR 20</b><span>WINDOW LIGHT STUDY</span></span></button>
+      <button class="ph reveal" data-cap="DUSK, TWO IN THE SURF"><span class="img-wrap"><img src="assets/photos/dusk-waves.jpg" width="1059" height="1600" alt="Two people holding hands walking into dark blue surf at dusk" loading="lazy" /></span><span class="cap"><b>FR 21</b><span>DUSK · TWO IN THE SURF</span></span></button>
+      <button class="ph reveal" data-cap="TEA COUNTRY, ENGINE OFF"><span class="img-wrap"><img src="assets/photos/tea-valley.jpg" width="1066" height="1600" alt="Rider seated on a parked Triumph with his back to camera, overlooking green tea-estate hills under a cloudy sky" loading="lazy" /></span><span class="cap"><b>FR 22</b><span>TEA COUNTRY · ENGINE OFF</span></span></button>
+      <button class="ph reveal" data-cap="SODIUM PROFILE"><span class="img-wrap"><img src="assets/photos/yellow-profile.jpg" width="1600" height="1059" alt="Profile portrait lit by a yellow wall of light, sunglasses reflecting pink" loading="lazy" /></span><span class="cap"><b>FR 23</b><span>SODIUM PROFILE</span></span></button>
+      <button class="ph reveal" data-cap="TERRACE LINES"><span class="img-wrap"><img src="assets/photos/triumph-terraces.jpg" width="1066" height="1600" alt="White-helmeted rider walking past a Triumph's gold forks toward terraced tea plantations and blue mountains" loading="lazy" /></span><span class="cap"><b>FR 24</b><span>TERRACE LINES · TRIUMPH</span></span></button>
+      <button class="ph reveal" data-cap="SENTRY, LAST LIGHT"><span class="img-wrap"><img src="assets/photos/crow-lamp.jpg" width="1060" height="1600" alt="Silhouette of a crow perched on a streetlamp against an amber dusk sky" loading="lazy" /></span><span class="cap"><b>FR 25</b><span>SENTRY · LAST LIGHT</span></span></button>
+      <button class="ph reveal" data-cap="STAGE, RED OVER BLUE"><span class="img-wrap"><img src="assets/photos/stage-smoke.jpg" width="1066" height="1600" alt="Guitarist head bowed under red and blue stage smoke" loading="lazy" /></span><span class="cap"><b>FR 26</b><span>STAGE · RED OVER BLUE</span></span></button>
+      <button class="ph reveal" data-cap="WILDFLOWER, FUEL CAP"><span class="img-wrap"><img src="assets/photos/tank-flower.jpg" width="1066" height="1600" alt="Small yellow wildflower resting on the dark tank of a Triumph beside the badge" loading="lazy" /></span><span class="cap"><b>FR 27</b><span>WILDFLOWER · FUEL CAP</span></span></button>
+      <button class="ph reveal" data-cap="ADVENTURE, BACKLIT"><span class="img-wrap"><img src="assets/photos/beach-silhouette.jpg" width="1059" height="1600" alt="Silhouette of two friends against a deep blue sky at the beach" loading="lazy" /></span><span class="cap"><b>FR 28</b><span>ADVENTURE · BACKLIT</span></span></button>
+      <button class="ph reveal" data-cap="LID OFF, LOOKOUT"><span class="img-wrap"><img src="assets/photos/helmet-red.jpg" width="1600" height="1066" alt="Red helmet hanging on a Triumph in the foreground while the rider stands looking over a forest valley" loading="lazy" /></span><span class="cap"><b>FR 29</b><span>LID OFF · LOOKOUT</span></span></button>
+      <button class="ph reveal" data-cap="FRONT WHEEL UP"><span class="img-wrap"><img src="assets/photos/wheelie.jpg" width="1066" height="1600" alt="Rider pulling a wheelie in front of a watching crowd" loading="lazy" /></span><span class="cap"><b>FR 30</b><span>FRONT WHEEL UP</span></span></button>
+      <button class="ph reveal" data-cap="STORM FRONT"><span class="img-wrap"><img src="assets/photos/storm-rider.jpg" width="1066" height="1600" alt="Helmeted rider astride a motorcycle with glowing daytime running lights under a heavy storm sky" loading="lazy" /></span><span class="cap"><b>FR 31</b><span>STORM FRONT · MT</span></span></button>
+      <button class="ph reveal" data-cap="KEEPY-UPS, KOVALAM"><span class="img-wrap"><img src="assets/photos/football-finger.jpg" width="1600" height="1059" alt="Boy balancing a football on one finger at the beach" loading="lazy" /></span><span class="cap"><b>FR 32</b><span>KEEPY-UPS · BEACH SAND</span></span></button>
+      <button class="ph reveal" data-cap="MIRROR BALL CONGREGATION"><span class="img-wrap"><img src="assets/photos/crowd-disco.jpg" width="1600" height="1066" alt="Concert crowd with raised hands under a disco ball in pink smoke" loading="lazy" /></span><span class="cap"><b>FR 33</b><span>MIRROR BALL CONGREGATION</span></span></button>
+      <button class="ph reveal" data-cap="FAIR WEATHER"><span class="img-wrap"><img src="assets/photos/giraffe-outlook.jpg" width="1600" height="1066" alt="Man in a cream sweatshirt sitting on rocks, looking out at hazy green mountains under a blue sky" loading="lazy" /></span><span class="cap"><b>FR 34</b><span>FAIR WEATHER · OUTLOOK</span></span></button>
+      <button class="ph reveal" data-cap="BREAKWATER, PAINTED TOWN"><span class="img-wrap"><img src="assets/photos/coast-town.jpg" width="1600" height="1059" alt="Man sitting on breakwater rocks looking at a colourful coastal town and beach" loading="lazy" /></span><span class="cap"><b>FR 35</b><span>BREAKWATER · PAINTED TOWN</span></span></button>
+      <button class="ph reveal" data-cap="NIGHT SIGNAL"><span class="img-wrap"><img src="assets/photos/night-profile.jpg" width="1600" height="1059" alt="Rim-lit night portrait with a bright street light flare and red neon bokeh" loading="lazy" /></span><span class="cap"><b>FR 36</b><span>NIGHT SIGNAL</span></span></button>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <p class="say reveal">FR 36/36 — END OF ROLL · GET IN TOUCH</p>
+    <a class="email reveal" href="mailto:roshanabbas2003@gmail.com">roshanabbas2003@gmail.com</a>
+    <div class="socials reveal">
+      <a href="https://github.com/arohere" target="_blank" rel="noopener">GITHUB</a>
+      <a href="#" data-placeholder>LINKEDIN</a>
+      <a href="#" data-placeholder>INSTAGRAM</a>
+    </div>
+
+  </section>
+
+  <footer>
+    <span>© 2026 ABBAS ROSHAN — aro</span>
+    <span>AUDITS BY NIGHT · SHUTTER BY DAWN</span>
+    <span>GRADED IN TEAL &amp; ORANGE</span>
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var canHover = matchMedia("(hover: hover)").matches;
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  /* ---- frame counter: scroll progress as a 36-exposure roll ---- */
+  var frEl = document.getElementById("frameCounter");
+  function updateFrame() {
+    var max = document.documentElement.scrollHeight - innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+    var fr = 1 + Math.round(p * 35);
+    frEl.textContent = "FR " + pad(fr) + "/36";
+  }
+  addEventListener("scroll", updateFrame, { passive: true });
+  addEventListener("resize", updateFrame);
+  updateFrame();
+
+  /* ---- cursor reticle ---- */
+  var ret = document.querySelector(".reticle");
+  var rx = innerWidth / 2, ry = innerHeight / 2, mx = rx, my = ry;
+  document.addEventListener("mousemove", function (e) { mx = e.clientX; my = e.clientY; });
+  if (canHover && !reduced) {
+    (function lerpLoop() {
+      rx += (mx - rx) * 0.22; ry += (my - ry) * 0.22;
+      ret.style.left = rx + "px"; ret.style.top = ry + "px";
+      requestAnimationFrame(lerpLoop);
+    })();
+    document.querySelectorAll("a, button, .work-row, .bike, .deck-hero").forEach(function (el) {
+      if (el.closest && el.closest(".lightbox")) return;
+      el.addEventListener("mouseenter", function () { ret.classList.add("is-hover"); });
+      el.addEventListener("mouseleave", function () { ret.classList.remove("is-hover"); });
+    });
+  } else { ret.style.display = "none"; }
+
+  /* ---- hover previews: film negatives per project ---- */
+  var ART = {
+    soc2: '<rect x="1" y="1" width="270" height="168" fill="none" stroke="#1f4550"/>' +
+      [0,1,2,3,4,5].map(function(i){var y=28+i*20;return '<rect x="30" y="'+(y-7)+'" width="11" height="11" fill="none" stroke="#f0982f" stroke-width="1.5"/>'+(i<4?'<path d="M32 '+(y-2)+' l3 3 l5 -7" fill="none" stroke="#6fe08a" stroke-width="1.5"/>':'')+'<line x1="56" y1="'+(y-1)+'" x2="'+(200-i*14)+'" y2="'+(y-1)+'" stroke="#8ba0a8" stroke-width="1.5" opacity="0.55"/>';}).join('') +
+      '<text x="238" y="158" fill="#f0982f" font-family="monospace" font-size="10" text-anchor="end">TYPE II</text>',
+    sast: '<rect x="1" y="1" width="270" height="168" fill="none" stroke="#1f4550"/>' +
+      [0,1,2,3,4,5,6].map(function(i){var y=30+i*17;var w=[150,180,120,168,96,140,110][i];return '<line x1="30" y1="'+y+'" x2="'+(30+w*0.14)+'" y2="'+y+'" stroke="#1f4550" stroke-width="4"/><line x1="'+(38+w*0.14)+'" y1="'+y+'" x2="'+(30+w)+'" y2="'+y+'" stroke="'+(i===3?'#e03a2f':'#8ba0a8')+'" stroke-width="1.5" opacity="'+(i===3?'0.9':'0.5')+'"/>';}).join('') +
+      '<path d="M96 71 h-14 v10 M208 71 h14 v10 M96 91 h-14 v-10 M208 91 h14 v-10" fill="none" stroke="#f0982f" stroke-width="2"/>' +
+      '<text x="30" y="160" fill="#e03a2f" font-family="monospace" font-size="9">A03:INJECTION — FLAGGED</text>' +
+      '<text x="242" y="24" fill="#6fe08a" font-family="monospace" font-size="9" text-anchor="end">WF: RUNNING</text>',
+    kumon: '<rect x="1" y="1" width="270" height="168" fill="none" stroke="#1f4550"/>' +
+      (function(){var s='';for(var r=0;r<4;r++){for(var c=0;c<7;c++){var x=52+c*26,y=52+r*24;var st=(r===1&&c===4)?'#f0982f':((r*7+c)%5===3?'#1f4550':'#6fe08a');s+='<rect x="'+x+'" y="'+y+'" width="14" height="12" fill="none" stroke="'+st+'" stroke-width="1.5"/>';if(st==='#6fe08a')s+='<path d="M'+(x+3)+' '+(y+6)+' l3 3 l5 -7" fill="none" stroke="#6fe08a" stroke-width="1.2"/>';}}return s;})() +
+      '<line x1="52" y1="38" x2="234" y2="38" stroke="#8ba0a8" stroke-width="1.5" opacity="0.55"/>' +
+      '<text x="52" y="30" fill="#8ba0a8" font-family="monospace" font-size="9">ATTENDANCE — WK 12</text>' +
+      '<text x="234" y="160" fill="#f0982f" font-family="monospace" font-size="10" text-anchor="end">94% PRESENT</text>',
+    exit: '<rect x="1" y="1" width="270" height="168" fill="none" stroke="#1f4550"/>' +
+      '<path d="M60 20 h-16 v16 M212 20 h16 v16 M60 150 h-16 v-16 M212 150 h16 v-16" fill="none" stroke="#f0982f" stroke-width="2"/>' +
+      '<rect x="96" y="52" width="80" height="72" fill="none" stroke="#6fe08a" stroke-width="1.5" stroke-dasharray="5 4"/>' +
+      '<circle cx="136" cy="74" r="8" fill="none" stroke="#e9e2d4" stroke-width="1.5"/>' +
+      '<path d="M136 82 v22 M136 92 l-12 10 M136 92 l12 10 M129 104 l-5 14 M143 104 l5 14" fill="none" stroke="#e9e2d4" stroke-width="1.5"/>' +
+      '<text x="96" y="46" fill="#6fe08a" font-family="monospace" font-size="9">PERSON 0.96</text>' +
+      '<text x="26" y="164" fill="#8ba0a8" font-family="monospace" font-size="9">EXIT PATH — CLEAR</text>',
+    aito: '<rect x="1" y="1" width="270" height="168" fill="none" stroke="#1f4550"/>' +
+      [[52,44],[92,96],[150,58],[196,118],[120,138],[224,42],[70,120],[176,86]].map(function(p,i,a){var s='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3" fill="#8ba0a8"/>';if(i>0){var q=a[i-1];s+='<line x1="'+q[0]+'" y1="'+q[1]+'" x2="'+p[0]+'" y2="'+p[1]+'" stroke="#1f4550" stroke-width="1"/>';}return s;}).join('') +
+      '<circle cx="150" cy="58" r="7" fill="none" stroke="#f0982f" stroke-width="1.5"/>' +
+      '<rect x="168" y="20" width="84" height="26" rx="13" fill="none" stroke="#f0982f" stroke-width="1.5"/>' +
+      '<text x="210" y="37" fill="#f0982f" font-family="monospace" font-size="10" text-anchor="middle">TOP-K: 3</text>',
+    bookezy: '<rect x="1" y="1" width="270" height="168" fill="none" stroke="#1f4550"/>' +
+      '<rect x="46" y="48" width="180" height="74" rx="6" fill="none" stroke="#e9e2d4" stroke-width="1.5"/>' +
+      '<line x1="170" y1="48" x2="170" y2="122" stroke="#e9e2d4" stroke-width="1.5" stroke-dasharray="4 5"/>' +
+      '<circle cx="170" cy="48" r="6" fill="#0e161c" stroke="#e9e2d4" stroke-width="1.5"/>' +
+      '<circle cx="170" cy="122" r="6" fill="#0e161c" stroke="#e9e2d4" stroke-width="1.5"/>' +
+      '<text x="62" y="80" fill="#f0982f" font-family="monospace" font-size="11">ADMIT ONE</text>' +
+      '<text x="62" y="100" fill="#8ba0a8" font-family="monospace" font-size="9">HELD — 09:59</text>' +
+      '<text x="198" y="90" fill="#8ba0a8" font-family="monospace" font-size="9" transform="rotate(90 198 90)">Nº 0042</text>',
+    ksp: '<rect x="1" y="1" width="270" height="168" fill="none" stroke="#1f4550"/>' +
+      '<path d="M136 34 l52 26 v52 l-52 26 l-52 -26 v-52 z" fill="none" stroke="#e9e2d4" stroke-width="1.5"/>' +
+      '<path d="M84 60 l52 26 l52 -26 M136 86 v52" fill="none" stroke="#e9e2d4" stroke-width="1.5"/>' +
+      '<path d="M110 47 l52 26" fill="none" stroke="#f0982f" stroke-width="1.5"/>' +
+      '<text x="26" y="30" fill="#8ba0a8" font-family="monospace" font-size="9">PO-1187 · RECEIVED</text>' +
+      '<text x="246" y="160" fill="#f0982f" font-family="monospace" font-size="9" text-anchor="end">STOCK: OK</text>'
+  };
+  var prev = document.querySelector(".preview");
+  var prevSvg = document.getElementById("previewSvg");
+  var prevCap = document.getElementById("previewCap");
+  var prevFr = document.getElementById("previewFr");
+  if (canHover && !reduced && innerWidth > 1000) {
+    var px = 0, py = 0, rot = 0, lastMx = 0, active = false;
+    (function prevLoop() {
+      px += (mx - px) * 0.12; py += (my - py) * 0.12;
+      var vel = mx - lastMx; lastMx = mx;
+      rot += (Math.max(-9, Math.min(9, vel * 0.35)) - rot) * 0.08;
+      prev.style.transform = "translate(" + (px + 28) + "px," + (py - 210) + "px) rotate(" + rot + "deg)";
+      requestAnimationFrame(prevLoop);
+    })();
+    document.querySelectorAll(".work-row").forEach(function (row) {
+      row.addEventListener("mouseenter", function () {
+        prevSvg.innerHTML = ART[row.dataset.preview] || "";
+        prevCap.textContent = row.dataset.cap || "";
+        prevFr.textContent = row.querySelector(".tc").textContent;
+        active = true;
+        if (window.gsap) gsap.to(prev, { opacity: 1, duration: 0.35, ease: "power2.out" });
+        else prev.style.opacity = 1;
+      });
+      row.addEventListener("mouseleave", hidePrev);
+    });
+    addEventListener("scroll", hidePrev, { passive: true });
+  }
+  function hidePrev() {
+    active = false;
+    if (window.gsap) gsap.to(prev, { opacity: 0, duration: 0.25 });
+    else prev.style.opacity = 0;
+  }
+
+  /* ---- lightbox for gallery frames ---- */
+  var lb = document.getElementById("lightbox");
+  var lbImg = document.getElementById("lbImg");
+  var lbFr = document.getElementById("lbFr");
+  var lbCap = document.getElementById("lbCap");
+  var lbClose = document.getElementById("lbClose");
+  var lbTrigger = null;
+  function closeLb() {
+    if (!lb.classList.contains("open")) return;
+    lb.classList.remove("open");
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+    if (lbTrigger) { lbTrigger.focus(); lbTrigger = null; }
+  }
+  document.querySelectorAll(".ph").forEach(function (ph) {
+    ph.addEventListener("click", function () {
+      var img = ph.querySelector("img");
+      lbImg.src = img.src;
+      lbImg.alt = img.alt;
+      lbFr.textContent = ph.querySelector(".cap b").textContent;
+      lbCap.textContent = ph.dataset.cap || "";
+      lbTrigger = ph;
+      lb.classList.add("open");
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      lbClose.focus();
+    });
+  });
+  lb.addEventListener("click", closeLb);
+  document.addEventListener("keydown", function (e) {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") closeLb();
+    else if (e.key === "Tab") { e.preventDefault(); lbClose.focus(); }
+  });
+
+  /* ---- hero polaroid deck: auto-shuffle + click to send back ---- */
+  var deck = document.getElementById("heroDeck");
+  if (deck) {
+    var dCards = [].slice.call(deck.querySelectorAll(".pcard"));
+    var busy = false;
+    var PILE = [{"f":"img-4063.jpg","n":"Aro"},{"f":"img-0483.jpg","n":"Lakshmi · Surya Deepan"},{"f":"img-0209-0.jpg","n":"Aro · JD"},{"f":"img-0211.jpg","n":"JD"},{"f":"img-5590.jpg","n":"Aro · Karthik Raja · Surya Deepan · Guru Karthik"},{"f":"img-5588.jpg","n":""},{"f":"img-0653-0.jpg","n":"Aro"},{"f":"img-5007.jpg","n":"Godwin · Aro"},{"f":"img-4998.jpg","n":"Aadhil · Aro"},{"f":"img-3190.jpg","n":"Anushika"},{"f":"img-4924.jpg","n":"Aro · Jervin"},{"f":"img-5140-0.jpg","n":"Sivadharani"},{"f":"img-1654-0.jpg","n":"Aro · Abinaya"},{"f":"img-4818.jpg","n":"Nandini · Aro"},{"f":"img-3493.jpg","n":"Ricky · Pramodh · Ashwin · Aro"},{"f":"img-5583.jpg","n":"Abhishek · JD"},{"f":"img-5589.jpg","n":"Aro · Guru Karthik · Surya Deepan · Karthik Raja"},{"f":"img-4024.jpg","n":"Gayathri"},{"f":"img-0662-0.jpg","n":"Gopika"},{"f":"img-4263.jpg","n":"Aro · Gayathri"},{"f":"img-4481.jpg","n":"Aro · Ajay Anand · Sivadharani"},{"f":"img-3114.jpg","n":"Aro · Surya Deepan · Harini · Guru Karthik · Jagadish · Karthik Raja"},{"f":"img-2324.jpg","n":"Mayank · Naveen · Manoj · Benji · Aro · Vicky · Aadithya · Vishruth · Sujan"},{"f":"img-4841-0.jpg","n":"Janani · Shanitha · Balaji · Riki · Jervin · Ajay Anand · Aro · Sivadharani · Aadhil"},{"f":"img-5141-0.jpg","n":"Sivadharani"},{"f":"img-4829.jpg","n":"Riki · Shanitha · Balaji · Ajay Anand · Aro · Jervin · Janani"},{"f":"img-4256.jpg","n":"Vinisha · Aro"},{"f":"img-4995.jpg","n":"Ajay Anand · Godwin"},{"f":"img-4648.jpg","n":"Riki · Jervin · Janani · Aro · Shanitha · Karthik"},{"f":"img-3951.jpg","n":"Shanitha"},{"f":"img-5262.jpg","n":"Gopika · Surya Deepan · Yadu · Aro"},{"f":"img-2303.jpg","n":"Vishruth"},{"f":"img-2814.jpg","n":"Anushika · Aro · Pavithran"},{"f":"img-5586.jpg","n":"Mayank · Ajay · Aro"},{"f":"img-5548.jpg","n":"Gayathri · Surya Deepan · Aro"},{"f":"img-4909.jpg","n":"Sivadharani · Aro"},{"f":"img-5579.jpg","n":"Aro · Abhishek"},{"f":"img-5162.jpg","n":"Vishruth · Ajmal Athik · Vignesh · Rakesh · Thomas · Aadithya · Aro · Kishore"},{"f":"img-0121-abi.jpg","n":"Abhishek"},{"f":"img-3904-0.jpg","n":"Karthik Raja · Jagadish · Harini · Aro · Surya Deepan"},{"f":"img-4272.jpg","n":"Gayathri · Surya Deepan"},{"f":"img-5587.jpg","n":"Anand · Aro"},{"f":"img-4112-0.jpg","n":"Kamali"},{"f":"img-3777.jpg","n":"Aro · Anushika"},{"f":"img-3953.jpg","n":"Sivadharani"},{"f":"img-4409.jpg","n":"Vishak · Anto · Aro"},{"f":"img-4913.jpg","n":"Thamizharasan · Aro"},{"f":"img-4257.jpg","n":"Vinisha · Surya Deepan · Aro"},{"f":"img-0689.jpg","n":"Jagadish · Aro"},{"f":"img-2699-0.jpg","n":"Kamali"},{"f":"img-2309.jpg","n":"Aadithya"},{"f":"img-2282.jpg","n":"Manoj · Aro"},{"f":"img-9916.jpg","n":"Varun · JD · Pramodh · Purvaja · Sivaranjini · Krithin · Abhishek · Surya Prakash · Aro · Ashwin · Swetha"},{"f":"img-5056.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"img-4891.jpg","n":"Riki · Aro"},{"f":"img-5591.jpg","n":"Aro · Surya Deepan"},{"f":"img-5585.jpg","n":""},{"f":"img-3731.jpg","n":"Pavithran"},{"f":"img-0797.jpg","n":"Barath"},{"f":"img-4902.jpg","n":"Shanitha · Ajay Anand · Aro"},{"f":"img-2304.jpg","n":"Benji"},{"f":"img-4025-0.jpg","n":"Surya Deepan"},{"f":"img-4903.jpg","n":"Shanitha · Aro"},{"f":"img-9160.jpg","n":"Sivaranjini · JD"},{"f":"img-5581.jpg","n":"Arunima"},{"f":"img-4135.jpg","n":"Hari · Revathy · Deepan"},{"f":"img-3947.jpg","n":"Jervin"},{"f":"img-1649.jpg","n":"Jagadish · Aro · Surya Deepan · Yadu"},{"f":"img-5536.jpg","n":"Gayathri · Vinisha"},{"f":"img-4911.jpg","n":"Aadithya · Aro"},{"f":"img-4499-0.jpg","n":"Nandini · Arjun · JK · Aro"},{"f":"img-5580.jpg","n":"Aro · Abhishek · Sivaranjini"},{"f":"img-2290.jpg","n":"Aro · Naveen"},{"f":"img-0687.jpg","n":"JD · Aro"},{"f":"img-4196.jpg","n":"Shanitha · Janani · Karthik · Balaji · Aro · Jervin · Goutham"},{"f":"img-2307.jpg","n":"Naveen"},{"f":"img-4936.jpg","n":"Sivadharani · Karthik · Jervin · Shivaprakash"},{"f":"img-5582.jpg","n":"Afrin"},{"f":"img-4899.jpg","n":"Shanitha · Ajay Anand · Aro"},{"f":"img-3420.jpg","n":"Surya Deepan"},{"f":"img-8804.jpg","n":"Sivaranjini · Swetha · Ashwin · Purvaja · Varun · Surya Prakash"},{"f":"img-5513.jpg","n":"Vinisha · Surya Deepan · Gayathri · Aro"},{"f":"img-4996.jpg","n":"Deepan · Aro"},{"f":"img-3945.jpg","n":"Ajay Anand"},{"f":"img-3457.jpg","n":"Anushika"},{"f":"img-5584.jpg","n":"Arunima"},{"f":"img-0212.jpg","n":"Swetha"},{"f":"img-3950.jpg","n":"Shivaprakash"},{"f":"img-5531.jpg","n":"Gayathri"},{"f":"img-4419.jpg","n":"Rikitha · Aro · Balaji · Godwin"},{"f":"img-0658-0.jpg","n":"Gopika · Aro"},{"f":"img-4864-0.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"whatsapp-image-2025-09-02-at-1-50-34-pm.jpg","n":"Arunima"},{"f":"img-5037.jpg","n":"Sivadharani · Ajay Anand · Aro"},{"f":"img-0248.jpg","n":"JD"}];
+    var pileNext = 0;
+    function feedCard(card) {
+      if (!PILE.length) return;
+      var item = PILE[pileNext];
+      pileNext = (pileNext + 1) % PILE.length;
+      var img = card.querySelector("img");
+      img.src = "assets/polaroids/" + item.f;
+      img.alt = item.n ? "Polaroid of " + item.n : "Polaroid photo";
+      card.querySelector(".chin span").textContent = item.n;
+      var pre = new Image();
+      pre.src = "assets/polaroids/" + PILE[pileNext].f;
+    }
+
+    function deckSlot(i) {
+      var r = [-2.5, 4, -5, 3, -3.5, 5, -4, 2][i % 8] * (1 - i * 0.06);
+      var dx = [0, 6, -7, 4, -4, 7, -6, 3][i % 8];
+      return "translate(" + dx + "px," + (-i * 5) + "px) rotate(" + r + "deg) scale(" + Math.max(0.82, 1 - i * 0.028) + ")";
+    }
+    function deckLayout() {
+      dCards.forEach(function (c, i) {
+        c.style.zIndex = dCards.length - i;
+        c.style.opacity = i > 4 ? 0 : 1;
+        c.style.transform = deckSlot(i);
+      });
+    }
+    function deckCycle() {
+      if (busy || document.hidden) return;
+      busy = true;
+      var top = dCards[0];
+      if (reduced) {
+        var t0 = dCards.shift();
+        dCards.push(t0);
+        feedCard(t0);
+        deckLayout();
+        busy = false;
+        return;
+      }
+      top.style.transform = "translate(58%, -6%) rotate(14deg) scale(1.02)";
+      setTimeout(function () {
+        top.style.zIndex = 0;
+        dCards.push(dCards.shift());
+        feedCard(top);
+        deckLayout();
+        setTimeout(function () { busy = false; }, 560);
+      }, 330);
+    }
+    deckLayout();
+    var deckTimer = null;
+    function deckAuto() {
+      clearInterval(deckTimer);
+      if (!reduced) deckTimer = setInterval(deckCycle, 2000);
+    }
+    deckAuto();
+    deck.addEventListener("mouseenter", function () { clearInterval(deckTimer); });
+    deck.addEventListener("mouseleave", deckAuto);
+    deck.addEventListener("click", function () { deckCycle(); });
+    deck.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); deckCycle(); }
+    });
+  }
+
+  /* ---- shutter-blink navigation ---- */
+  var panels = document.querySelectorAll(".shutter .s");
+  document.querySelectorAll("nav .links a").forEach(function (a) {
+    if (a.getAttribute("href").charAt(0) !== "#") return;
+    a.addEventListener("click", function (e) {
+      var target = document.querySelector(a.getAttribute("href"));
+      if (!target) return;
+      e.preventDefault();
+      if (reduced || !window.gsap) {
+        target.scrollIntoView();
+        try { history.pushState(null, "", a.getAttribute("href")); } catch (err) {}
+        return;
+      }
+      var tl = gsap.timeline();
+      tl.to(panels, { scaleY: 1, duration: 0.22, ease: "power2.in" })
+        .add(function () {
+          window.scrollTo({ top: target.getBoundingClientRect().top + scrollY - 40, behavior: "instant" });
+          try { history.pushState(null, "", a.getAttribute("href")); } catch (err) {}
+        })
+        .to(panels, { scaleY: 0, duration: 0.34, ease: "power3.out", delay: 0.06 });
+    });
+  });
+
+  /* ---- fallback if GSAP fails to load ---- */
+  if (typeof gsap === "undefined") {
+    document.getElementById("preloader").style.display = "none";
+    document.querySelectorAll(".reveal, .hero-title .line > span").forEach(function (el) {
+      el.style.opacity = 1; el.style.transform = "none";
+    });
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger);
+
+  if (reduced) {
+    document.getElementById("preloader").style.display = "none";
+    gsap.set(".reveal, .hero-title .line > span", { opacity: 1, y: 0, clearProps: "transform" });
+  } else {
+    /* preloader roll count 00 -> 36 */
+    var bootFr = document.getElementById("bootFr");
+    var bootObj = { fr: 0 };
+    gsap.to(bootObj, { fr: 36, duration: 0.85, ease: "power2.inOut", onUpdate: function () {
+      bootFr.textContent = "FR " + pad(Math.round(bootObj.fr)) + "/36";
+    }});
+
+    /* ---- intro: boot -> letterbox settle -> title rise ---- */
+    var intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+    intro
+      .to("#preloader", { opacity: 0, duration: 0.5, delay: 1.05, onComplete: function () {
+        document.getElementById("preloader").style.display = "none";
+      }})
+      .from(".bar--top", { yPercent: -100, duration: 0.9 }, "-=0.2")
+      .from(".bar--bottom", { yPercent: 100, duration: 0.9 }, "<")
+      .to(".hero-title .line > span", { y: 0, duration: 1.1, stagger: 0.12, ease: "power4.out" }, "-=0.5")
+      .from(".role-line, .hero-sub, .scroll-cue, .nick-note", { opacity: 0, y: 20, duration: 0.8, stagger: 0.1 }, "-=0.7")
+      .from(".deck-hero", { opacity: 0, duration: 0.9 }, "-=0.5")
+      .from(".hud > div, nav", { opacity: 0, duration: 0.8 }, "-=0.6");
+
+    /* ---- "aro" pulse: ghost letters fall away, A·RO holds the frame ---- */
+    var aroTl = gsap.timeline({ repeat: -1, repeatDelay: 5.5, delay: 3.6 });
+    aroTl
+      .to(".hero-title .gl", { opacity: 0.07, y: 6, duration: 0.5, stagger: 0.05, ease: "power2.inOut" })
+      .to(".hero-title .nick", { textShadow: "0 0 30px rgba(240,152,47,0.55)", duration: 0.5 }, "<")
+      .to({}, { duration: 1.2 })
+      .to(".hero-title .gl", { opacity: 1, y: 0, duration: 0.65, stagger: { each: 0.035, from: "end" }, ease: "power2.out" })
+      .to(".hero-title .nick", { textShadow: "0 0 0px rgba(240,152,47,0)", duration: 0.65 }, "<");
+
+    /* ---- letterbox opens up as you leave the hero ---- */
+    gsap.to(document.documentElement, {
+      "--letterbox": "3.2vh",
+      ease: "none",
+      scrollTrigger: { trigger: "#hero", start: "bottom 90%", end: "bottom 30%", scrub: true }
+    });
+
+    /* ---- scroll reveals ---- */
+    gsap.utils.toArray(".reveal").forEach(function (el) {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: "power3.out",
+        scrollTrigger: { trigger: el, start: "top 88%" }
+      });
+    });
+
+    /* ---- hero title slight parallax ---- */
+    gsap.to(".hero-title", {
+      yPercent: -12, ease: "none",
+      scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: true }
+    });
+  }
+
+  /* ---- grade shift: cool -> golden hour entering After Hours ---- */
+  ScrollTrigger.create({
+    trigger: "#after-hours",
+    start: "top 55%",
+    onEnter: function () { document.body.classList.add("grade-warm"); },
+    onLeaveBack: function () { document.body.classList.remove("grade-warm"); }
+  });
+})();
+</script>
+</body>
+</html>
