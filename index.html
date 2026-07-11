@@ -356,6 +356,7 @@
   @media (max-width: 640px) { .sheet { columns: 1; } }
   .ph {
     display: block; width: 100%; break-inside: avoid; margin: 0 0 1.4rem;
+    user-select: none; -webkit-user-select: none;
     border: 1px solid var(--teal-line); background: var(--strip);
     padding: 10px 10px 0; cursor: pointer; text-align: left;
     font: inherit; color: inherit; appearance: none;
@@ -411,6 +412,19 @@
     transform: translateY(-50%) rotate(2deg);
     z-index: 3; cursor: pointer;
     perspective: 900px;
+    user-select: none; -webkit-user-select: none;
+    transition: scale 0.18s ease;
+  }
+  .deck-hero.pressed { scale: 0.975; }
+  .deck-hero img { -webkit-user-drag: none; }
+  .deck-hero .stack::after {
+    content: ""; position: absolute; inset: 0; z-index: 40;
+    background: #fff; opacity: 0; pointer-events: none;
+  }
+  .deck-hero.flash .stack::after { animation: deck-flash 0.4s ease-out; }
+  @keyframes deck-flash {
+    0% { opacity: 0.5; }
+    100% { opacity: 0; }
   }
   .deck-hero .stack {
     position: relative; display: block; aspect-ratio: 10 / 11.6;
@@ -1112,7 +1126,14 @@
     deckAuto();
     deck.addEventListener("mouseenter", function () { deckHover = true; clearTimeout(deckTimer); showTopTags(); });
     deck.addEventListener("mouseleave", function () { deckHover = false; deckAuto(); });
-    deck.addEventListener("click", function () { deckCycle(); });
+    deck.addEventListener("pointerdown", function () { deck.classList.add("pressed"); });
+    addEventListener("pointerup", function () { deck.classList.remove("pressed"); });
+    deck.addEventListener("click", function () {
+      deck.classList.remove("flash");
+      void deck.offsetWidth;
+      deck.classList.add("flash");
+      deckCycle();
+    });
     deck.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); deckCycle(); }
     });
